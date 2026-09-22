@@ -1,0 +1,6 @@
+# Copy to <repo-root>/.devskill-allowlist to suppress recurring false positives from
+# scripts/check_staged.py. One regex per line, matched against the offending line's content.
+# Lines starting with # are comments.
+#
+# Example: a fixtures directory full of intentionally fake API keys used in tests.
+# ^tests/fixtures/.*sk-fake[0-9]+

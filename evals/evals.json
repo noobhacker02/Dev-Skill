@@ -1,0 +1,37 @@
+{
+  "skill_name": "dev-workflow",
+  "evals": [
+    {
+      "id": 0,
+      "name": "csv2json-new-project",
+      "prompt": "I want a simple CLI tool that converts a CSV file to JSON. Not sure what language to use for this — what would you recommend? Keep it minimal: `csv2json input.csv output.json` should read a CSV with a header row and write a JSON array of objects keyed by that header.",
+      "expected_output": "A working CLI in a sensible, justified stack choice; a spec capturing requirements + test plan written before/alongside the code; a CHANGELOG entry; the quality-gate script run before committing; a local-only commit (no unprompted push); a status report summarizing what was actually tested, ending with a question about whether to iterate or push.",
+      "files": [],
+      "expectations": [
+        "Recommends a specific tech stack with a stated reason, not a bare menu or silent default",
+        "Writes a spec file (e.g. specs/<slug>/SPEC.md) with requirements and a test plan before/alongside implementation",
+        "Adds an entry to a CHANGELOG.md",
+        "Runs (or clearly attempts to run) a pre-commit safety/quality check before committing",
+        "Commits locally only — does not attempt `git push` without being asked",
+        "The csv2json implementation actually works: converts a sample CSV with a header row into a JSON array of objects",
+        "Produces a short status report of what was verified and asks whether to iterate or push"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "db-reset-existing-stack",
+      "prompt": "Add an npm script to this repo that resets and reseeds the local dev database — drop everything, re-run the Knex migrations, then run the seeds. This is for local development only.",
+      "expected_output": "Detects the existing Node/Express/Knex/Postgres stack from the fixture repo rather than proposing a different one; a spec describing the reset/reseed behavior and its safety constraints; the destructive drop/reset step is guarded against running against anything but a local/dev environment (env check, explicit confirmation, or scoped to a dev-only config) rather than an unconditional DROP; a CHANGELOG entry; the quality-gate script run before committing; a local-only commit; a status report asking whether to iterate or push.",
+      "files": [],
+      "expectations": [
+        "Detects and uses the existing Node/Express/Knex/Postgres stack rather than proposing a different one",
+        "Writes a spec describing the reset/reseed behavior and its blast radius / safety constraints",
+        "The destructive drop/reset operation is guarded (env check, explicit flag/confirmation, or config scoped to dev) rather than an unconditional DROP/rm executed with no safeguard",
+        "Adds an entry to CHANGELOG.md",
+        "Runs (or clearly attempts to run) a pre-commit safety/quality check before committing",
+        "Commits locally only — does not attempt `git push` without being asked",
+        "Produces a short status report and asks whether to iterate or push"
+      ]
+    }
+  ]
+}
