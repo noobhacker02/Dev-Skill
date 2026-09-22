@@ -23,3 +23,20 @@ All notable changes to this project are documented here. Format follows
 - `check_staged.py` no longer flags documentation (`.md`/`.mdx`/`.rst`/`.txt`) for *naming* the
   destructive patterns it detects — found by running the quality gate on this repo's own diff,
   which itself documents those patterns. Secret scanning still applies to docs.
+
+### Verified
+- Functional hook tests re-run with a real TruffleHog binary installed (previously only the
+  pattern-based fallback had been exercised): confirmed it independently catches a secret shape
+  (a Stripe key) our own patterns don't cover, and correctly ignores TruffleHog's own well-known
+  public example key rather than flagging it as noise.
+- skill-creator eval loop (2 test prompts, with-skill vs. no-skill baseline, 7 assertions each):
+  100% pass rate with the skill vs. 43% without — see `specs/dev-workflow-skill/STATUS.md` for the
+  full breakdown and the benchmark/review viewer.
+
+### Known issues
+- skill-creator's automated description-trigger optimization pass (`run_loop.py`) doesn't work
+  against this Claude Code CLI version — it registers the candidate skill as a slash command and
+  waits for a `Skill`-tool call to detect triggering, but the model never invokes commands that
+  way. Confirmed by manual replication (the model used `Bash` directly) and by 0% recall staying
+  identical across three unrelated description rewordings. Stopped rather than tune against a
+  broken signal; see `specs/dev-workflow-skill/STATUS.md`.
