@@ -37,6 +37,10 @@ All notable changes to this project are documented here. Format follows
 - `check_staged.py` no longer flags documentation (`.md`/`.mdx`/`.rst`/`.txt`) for *naming* the
   destructive patterns it detects — found by running the quality gate on this repo's own diff,
   which itself documents those patterns. Secret scanning still applies to docs.
+- SKILL.md Step 9 now explicitly says to commit `STATUS.md` — found because two iteration-2 eval
+  runs interpreted the previous silence differently (one committed it as a follow-up commit, one
+  left it uncommitted as a "handback note"). Wording fix, verified by inspection rather than a full
+  re-run (low-risk, doesn't change any logic the skill executes).
 
 ### Verified
 - Functional hook tests re-run with a real TruffleHog binary installed (previously only the
@@ -46,6 +50,12 @@ All notable changes to this project are documented here. Format follows
 - skill-creator eval loop (2 test prompts, with-skill vs. no-skill baseline, 7 assertions each):
   100% pass rate with the skill vs. 43% without — see `specs/dev-workflow-skill/STATUS.md` for the
   full breakdown and the benchmark/review viewer.
+- Iteration 2: 3 new mock scenarios targeting previously-untested paths — an existing repo with a
+  `CONSTITUTION.md` (respected, verified live), a browser-facing form-validation task (verified
+  with real Playwright/Chromium, 23/23 assertions, real screenshots), and a genuinely ambiguous
+  two-word request with zero context (correctly recognized as unanswerable without more input and
+  stopped rather than fabricating a system). 19/19 assertions passed across all three — see
+  `specs/dev-workflow-skill/STATUS.md`.
 
 ### Known issues
 - skill-creator's automated description-trigger optimization pass (`run_loop.py`) doesn't work

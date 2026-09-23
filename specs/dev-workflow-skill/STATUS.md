@@ -72,6 +72,34 @@ called out below rather than worked around. Ready to push.
   intentionally didn't adopt GitHub Spec Kit's full command set (see `references/roadmap.md` for
   the reasoning).
 
+## Iteration 2: mock-project eval round on previously-untested paths
+
+Three new with-skill scenarios, deliberately chosen to stress paths iteration 1 never touched:
+
+- **Constitution respect** (existing repo with `CONSTITUTION.md`): read the file, quoted its exact
+  rules, and followed every one — correct route file location/naming, correct `{ok, data}`
+  response envelope (verified live via curl), zero new npm dependencies (confirmed by diffing
+  `package.json`), no request-body logging. SPEC.md referenced the constitution instead of
+  re-deriving its conventions. 7/7 assertions.
+- **Playwright verification** (browser-facing form-validation task): correctly picked plain
+  HTML/CSS/JS over a framework, citing `tech-stack-guide.md`'s own carve-out for genuinely tiny
+  pages. Verified with real Playwright/Chromium — 23 real assertions covering both the
+  invalid-email-blocks-submit path and the valid-submit-shows-success path, plus real screenshots
+  taken and visually confirmed, not just read from source. 7/7 assertions.
+- **Ambiguous intake** ("make the checkout thing better", zero context, empty workspace): correctly
+  distinguished "one ambiguous detail in an otherwise clear ask" (proceed with a labeled default,
+  the skill's normal path) from "the entire ask has no anchor" (this case) — built nothing, staged
+  nothing, and explained exactly why proceeding would mean stacking three independent fabrications
+  (domain, current state, success criteria). 5/5 assertions.
+
+19/19 assertions passed across all three — no functional gaps found. One real but minor
+inconsistency surfaced: two different runs (this round's constitution eval vs. iteration 1's runs)
+disagreed on whether `STATUS.md` gets committed, because SKILL.md's Step 9 never said either way.
+Fixed with a one-line wording addition to Step 9. Verified by inspection, not a full re-run — it's
+a documentation clarity fix with no logic behind it to regress, and re-running a 10+ minute,
+100k+-token subagent to confirm a sentence is unambiguous would cost far more than the fix's risk
+warrants.
+
 ## Test evidence
 
 | Test plan item | Result |
@@ -81,6 +109,9 @@ called out below rather than worked around. Ready to push.
 | Skill triggers appropriately (description-trigger optimization) | not run to a valid result — harness bug in skill-creator's run_eval.py for this Claude Code CLI version (see above); not blocking |
 | Gitleaks catches secrets our patterns don't, ignores known examples, clean commit unaffected | pass — random AWS-shaped key and a Slack webhook both caught, AWS's documented example key correctly ignored, clean commit passed with gitleaks active |
 | CI security gate runs the same check server-side as the local hooks | pass — simulated locally with this PR's real base/head SHAs before pushing; confirmed against the live PR's Actions run after |
+| Skill respects an existing project CONSTITUTION.md rather than ignoring it | pass — 7/7 assertions, verified live |
+| Skill uses Playwright for real browser verification on a UI-facing task | pass — 7/7 assertions, 23 real Playwright assertions, real screenshots |
+| Skill handles a genuinely ambiguous, zero-context request responsibly | pass — 5/5 assertions, correctly stopped rather than fabricating a system |
 
 ## Decision needed
 

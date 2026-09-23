@@ -170,9 +170,12 @@ subagent calls per phase or as one continuous session.
 
 Write `specs/<task-slug>/STATUS.md` from `references/status-report-template.md`: what's working
 and verified, what's broken or risky, and exactly what was tested (Step 8's actual results, not
-its intentions). Give the user a short summary of the same, then ask directly: iterate further, or
-push? Loop back to Step 3 for another pass on the same feedback, or run `git push` (the installed
-pre-push hook is the last line of defense) once they say go.
+its intentions). Commit it — a second small local commit is fine, run the quality gate on it same
+as any other (Step 6 is cheap on a docs-only diff); STATUS.md is part of the task's record, not a
+disposable handback note, so don't leave it sitting uncommitted. Give the user a short summary of
+the same, then ask directly: iterate further, or push? Loop back to Step 3 for another pass on the
+same feedback, or run `git push` (the installed pre-push hook is the last line of defense) once
+they say go.
 
 ## Reference files
 
