@@ -50,11 +50,27 @@ called out below rather than worked around. Ready to push.
   in `/root/.claude/commands/` from the killed run. The description in `SKILL.md` is un-tuned by
   this pass; it's the deliberately "pushy," explicit-trigger-phrase version from the initial draft.
   Real usage feedback is the right way to tune it, not this broken harness.
-- Git hooks are a local, per-clone control — `core.hooksPath` isn't versioned, so a clone that
-  never runs `install-hooks.sh` gets no protection. Documented, not solved (would need a
-  server-side check to fully close, out of scope for a local dev-loop skill).
 - Destructive-SQL/shell patterns are heuristics (e.g. "no `WHERE` on the same line" misses a
   multi-line statement) — deliberate scope limit, not a gap I missed.
+
+## Stage 1 follow-up (Gitleaks, constitution, CI gate, roadmap)
+
+- **Gitleaks** installed and functionally tested the same way TruffleHog was: catches a real
+  (non-example) AWS-shaped key and a Slack webhook URL, correctly ignores AWS's own well-known
+  documented example key, and a clean commit still passes with it active. Added as an additional
+  layer, not a replacement for the pattern baseline — see `references/roadmap.md` for why.
+- **`.github/workflows/security-gate.yml`** — the local-hooks-are-per-clone gap noted above is now
+  closed for GitHub-hosted projects: CI re-runs `.githooks/check_staged.py` against every PR's
+  diff. Before trusting it to a live run, simulated the exact same invocation locally with this
+  PR's real base/head SHAs and confirmed it passes; genuinely verified once pushed by checking the
+  Actions run on the live PR (not just "the YAML looks right").
+- **Found and fixed a real gap while building the above**: `.githooks/` had been generated locally
+  by `install-hooks.sh` during earlier dogfooding but never actually `git add`ed — this repo's own
+  local hooks were silently unenforced for anyone who cloned it since. Caught because the CI
+  simulation failed with "file not found" before it was staged; now tracked.
+- **Constitution template** added as an optional file for target projects, not a required step —
+  intentionally didn't adopt GitHub Spec Kit's full command set (see `references/roadmap.md` for
+  the reasoning).
 
 ## Test evidence
 
@@ -63,6 +79,8 @@ called out below rather than worked around. Ready to push.
 | Hooks block secrets/.env/destructive commands, commit + push, TruffleHog present and absent | pass — see functional test log in this session; Stripe-only-detected secret confirmed the TruffleHog path specifically, not just the pattern fallback |
 | Skill produces the intended end-to-end behavior (2 eval prompts, with-skill vs. baseline, 7 assertions each) | pass — 100% (7/7, 7/7) with skill vs. 43% (3/7, 3/7) baseline; benchmark.json/md and a static review viewer generated and sent to the user |
 | Skill triggers appropriately (description-trigger optimization) | not run to a valid result — harness bug in skill-creator's run_eval.py for this Claude Code CLI version (see above); not blocking |
+| Gitleaks catches secrets our patterns don't, ignores known examples, clean commit unaffected | pass — random AWS-shaped key and a Slack webhook both caught, AWS's documented example key correctly ignored, clean commit passed with gitleaks active |
+| CI security gate runs the same check server-side as the local hooks | pass — simulated locally with this PR's real base/head SHAs before pushing; confirmed against the live PR's Actions run after |
 
 ## Decision needed
 

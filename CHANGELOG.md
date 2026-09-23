@@ -18,6 +18,20 @@ All notable changes to this project are documented here. Format follows
 - `references/model-effort-tiers.md`: guidance on matching model/effort to phase — highest at Plan
   (Steps 1–4), lowest at Execute (Step 5), medium-in-a-fresh-context at Recheck (Steps 6/8/9).
 - Repo housekeeping: `LICENSE` (MIT), `.gitignore`, `CONTRIBUTING.md`.
+- Gitleaks as a second, fast maintained-ruleset secret-scan layer in `check_staged.py`, alongside
+  TruffleHog's deeper/verified scan and the always-on pattern baseline — matches the industry
+  pre-commit-fast/CI-deep pairing (see `dev-workflow/references/hooks.md`).
+- `dev-workflow/references/constitution-template.md`: an optional, project-wide `CONSTITUTION.md`
+  a target repo can keep so specs stop re-deriving the same conventions every task (the one piece
+  worth taking from GitHub Spec Kit / OpenSpec without adopting their whole framework).
+- `.github/workflows/security-gate.yml`: server-side CI re-run of `check_staged.py` against every
+  PR's diff — closes the gap where a clone that never ran `install-hooks.sh` gets no local
+  protection. Runs against `.githooks/check_staged.py`, the same tracked copy the local hooks use.
+- `dev-workflow/references/roadmap.md`: living doc for known limitations, ideas considered and
+  rejected, and notes from using this skill in other projects.
+- **Fixed a real gap found while adding the CI workflow**: `.githooks/` had been generated locally
+  by `install-hooks.sh` during earlier dogfooding but was never actually committed — this repo's
+  own local hooks were silently not enforced for anyone re-cloning it. Now tracked.
 
 ### Fixed
 - `check_staged.py` no longer flags documentation (`.md`/`.mdx`/`.rst`/`.txt`) for *naming* the

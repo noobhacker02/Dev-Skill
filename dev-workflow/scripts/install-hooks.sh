@@ -26,9 +26,16 @@ echo "[dev-workflow] Commit .githooks/ so it ships with the repo. Each teammate'
 echo "[dev-workflow] needs to run this script once — core.hooksPath is a local git config, not"
 echo "[dev-workflow] something version control carries."
 
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo
+  echo "[dev-workflow] NOTE: gitleaks not found on PATH — skipping its fast, maintained-ruleset"
+  echo "[dev-workflow] scan (pattern-based checks still run and still block on their own)."
+  echo "[dev-workflow] Install gitleaks: https://github.com/gitleaks/gitleaks#installing"
+fi
+
 if ! command -v trufflehog >/dev/null 2>&1; then
   echo
-  echo "[dev-workflow] NOTE: trufflehog not found on PATH — the hooks will fall back to"
-  echo "[dev-workflow] pattern-based secret scanning only (still blocks on its own)."
-  echo "[dev-workflow] Install trufflehog for deeper scanning: https://github.com/trufflesecurity/trufflehog#install"
+  echo "[dev-workflow] NOTE: trufflehog not found on PATH — skipping its verified/deep scan"
+  echo "[dev-workflow] (pattern-based checks still run and still block on their own)."
+  echo "[dev-workflow] Install trufflehog: https://github.com/trufflesecurity/trufflehog#install"
 fi

@@ -22,18 +22,22 @@ same engine, `scripts/check_staged.py`:
 4. **Destructive shell** — `rm -rf /`, `~`, `*`, or `$HOME`; `git push --force` (but not
    `--force-with-lease`); `git reset --hard`; `chmod -R 777 /`; raw `dd ... of=/dev/...` disk
    writes; shell fork bombs.
-5. **TruffleHog**, when installed, additionally scans every touched file for verified/likely
-   secrets using its full detector set — a strictly deeper check than the patterns above. If it
-   isn't installed, the hook prints an install link and continues; it does not block the commit or
-   push on TruffleHog's absence, because the pattern checks above already provide a baseline and
-   requiring every contributor to install a third-party tool before their first commit is worse
-   for adoption than it's worth.
+5. **Gitleaks**, when installed, scans the same staged diff (or commit range, on push) against its
+   large, actively-maintained ruleset — faster and broader than our own hand-rolled patterns above,
+   which exist specifically so there's still a real baseline when nobody's installed anything.
+6. **TruffleHog**, when installed, additionally scans every touched file for verified/likely
+   secrets using its full detector set, including live-credential verification for many services —
+   the deepest of the three layers. Gitleaks asks "does this look like a secret"; TruffleHog also
+   asks "is it still active". Neither tool being installed blocks the commit or push on its own
+   absence — the pattern checks above already provide a baseline, and requiring every contributor
+   to install third-party tools before their first commit is worse for adoption than it's worth.
+   Each prints an install link when missing.
 
 The destructive-command/SQL check (but not the secret check) skips `.md`/`.mdx`/`.rst`/`.txt`
 files: documentation about this tool necessarily names the exact patterns it blocks (this file
 does, right above), and that's prose, not code that will ever execute. A real secret pasted into a
-README by mistake is still a real secret, so the secret patterns and TruffleHog still run on
-docs.
+README by mistake is still a real secret, so the secret patterns, Gitleaks, and TruffleHog all
+still run on docs.
 
 ## Handling a false positive
 
