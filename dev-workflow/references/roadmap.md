@@ -90,3 +90,14 @@ into the skill itself rather than staying a one-off local tweak.
 - Worth pulling back into the skill? Not yet — one clean cross-stack pass isn't enough signal to
   change anything, and the Step-0-skipped gap is about this session's pacing under `/loop`, not a
   defect in Step 0 itself. Revisit if a second, less rushed cross-project use shows the same gap.
+- **A concrete example of Step 8's own point, from the same project**: agent-loop's Step-8-equivalent
+  verification first used a WebSocket-only test (`test/plumbing.mjs`) that opened and immediately
+  closed its own client socket. It passed clean. A *second*, real-browser test that left a
+  connection open for the run's actual duration (`test/browser-approval.mjs`) then caught a genuine
+  process-exit deadlock — `server.close()` never returning while a browser stayed connected — that
+  the first test structurally could not have found, because it never left anything open long enough
+  to expose it. This is the same failure shape Step 8 exists to catch in this skill's own loop:
+  a check that matches the shape of what will actually happen in use finds bugs a narrower one
+  passes right over. Reinforces Step 8 as written; no wording change needed, but a good concrete
+  example worth keeping if Step 8 is ever revised, since "test the real usage shape, not just the
+  wiring" is otherwise easy to nod at without a case that shows the cost of skipping it.
