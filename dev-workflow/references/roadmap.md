@@ -61,3 +61,32 @@ into the skill itself rather than staying a one-off local tweak.
 - What needed adjusting: ...
 - Worth pulling back into the skill? y/n — why
 -->
+
+### agent-loop (TypeScript/Node, Claude Agent SDK orchestrator) — first cross-project stack test
+
+- Stack: TypeScript/Node, `node:sqlite`, `ws`, `playwright-core` — the hooks' first real exposure to
+  a non-Python project.
+- What needed adjusting: nothing in the hooks themselves. `install-hooks.sh` and `check_staged.py`
+  worked unmodified. Ran a full simulated security-gate pass against the project's entire initial
+  commit before trusting it live (same discipline as the CI-gate check on this repo) — clean pass,
+  including on `src/hooks.ts`'s own `HARD_DENY_PATTERNS` array, which contains regex *source* like
+  `rm\s+-rf\s+\/` as string literals. That text does not false-trigger the destructive-command
+  scanner, because the scanner's own regexes require literal whitespace (`rm -rf /`), and `\s+` in
+  source code is backslash-s-plus characters, not a space — different from the doc-file false
+  positive found on this repo (Iteration: dogfooding, see `specs/dev-workflow-skill/STATUS.md`),
+  where *prose* naming these same patterns in plain English did trigger it. Net finding: writing
+  security-pattern *source* into a file is safe by construction in a way writing about it in docs
+  is not; no change needed here, but worth knowing this isn't luck if it comes up again.
+- Honest gap, not a hooks problem: the hooks were installed on agent-loop *after* several commits
+  already existed, not from the first commit (Step 0 of the skill's own loop), because agent-loop
+  was built quickly under an autonomous `/loop` session focused on getting a working pipeline
+  verified end-to-end first. This is a real instance of the loop's own Step 0 being skipped in
+  practice under time/task pressure, not a hooks defect — worth remembering that "install hooks
+  first" needs to survive fast, exploratory starts, not just careful ones. No spec/changelog were
+  written for agent-loop via `spec-template.md`/`changelog-template.md` either, for the same reason;
+  its `STATUS.md` was written in the project's own voice instead. Not proposing a process change
+  from this alone — one data point — but flagging it since "did we actually follow our own loop"
+  is exactly what this section exists to catch honestly rather than paper over.
+- Worth pulling back into the skill? Not yet — one clean cross-stack pass isn't enough signal to
+  change anything, and the Step-0-skipped gap is about this session's pacing under `/loop`, not a
+  defect in Step 0 itself. Revisit if a second, less rushed cross-project use shows the same gap.
