@@ -8,17 +8,18 @@ description: >
   secret scan, destructive-command scan), commit locally, verify locally against the spec
   (Playwright for anything with a browser surface, stack-appropriate tests otherwise), write a
   short status report of what's good/bad, checkpoint with the user on whether to iterate or push,
-  and loop. Also installs tracked git hooks (pre-commit + pre-push, TruffleHog-backed with a
-  pattern-based fallback) that block secrets, .env files, and destructive SQL/shell commands from
-  ever being committed or pushed. Use this whenever the user asks to build, implement, fix, ship,
+  and loop. Also installs tracked git hooks (pre-commit + pre-push, Gitleaks- and TruffleHog-backed
+  with a pattern-based fallback) that block secrets, .env files, and destructive SQL/shell commands
+  from ever being committed or pushed. Use this whenever the user asks to build, implement, fix, ship,
   or "properly" do a non-trivial piece of code — phrases like "spec this out", "set up the
   workflow", "add the safety hooks", "what stack should I use", or any multi-step feature/bugfix
   request — even when they never say the words "spec" or "workflow" out loud.
 compatibility: >
   Requires git and bash. The safety-check scripts require python3 (standard library only, no
-  pip installs). TruffleHog (https://github.com/trufflesecurity/trufflehog) is used automatically
-  when installed and the hooks fall back to pattern-based scanning when it isn't. Playwright is
-  used for local verification only when the project has a browser-facing surface.
+  pip installs). Gitleaks (https://github.com/gitleaks/gitleaks) and TruffleHog
+  (https://github.com/trufflesecurity/trufflehog) are used automatically when installed and the
+  hooks fall back to pattern-based scanning when neither is. Playwright is used for local
+  verification only when the project has a browser-facing surface.
 ---
 
 # Dev Workflow
@@ -77,10 +78,19 @@ don't relitigate it. If the repo is new or empty:
   choice is genuinely close or the user is likely to care (e.g. it locks them into an ecosystem);
   otherwise recommend and proceed.
 
+Check for a `CONSTITUTION.md` at the repo root — a project-wide set of conventions/non-negotiables
+that this and every future spec should respect (see `references/constitution-template.md`). If one
+exists, read it now so Step 3 doesn't re-derive decisions it already answers. If the project is new
+and this is shaping up to be more than a one-off task, it's worth creating one from the template;
+for a small existing repo or a single quick task, skip it — it's a tool for recurring drift across
+many specs, not a mandatory file every project needs on day one.
+
 ## Step 3 — Spec + changelog
 
-Write the spec to `specs/<task-slug>/SPEC.md` using `references/spec-template.md`. It should be
-detailed enough that someone with zero conversation context could implement from it and know when
+Write the spec to `specs/<task-slug>/SPEC.md` using `references/spec-template.md`. If a
+`CONSTITUTION.md` exists, reference it for anything it already covers instead of restating those
+decisions in the spec. It should be detailed enough that someone with zero conversation context
+could implement from it and know when
 they're done — that's the actual bar, not "is it long." At minimum it captures: the restated
 request, in-scope vs out-of-scope, the chosen stack, requirements, exactly what the output/
 deliverable is, and — critically — the test plan (what will be checked in Step 8 and how). Writing
@@ -119,8 +129,9 @@ python3 <path-to-this-skill>/scripts/check_staged.py --mode=commit
 This scans staged diffs and filenames for secrets (API keys, private key material, AWS/GitHub/
 Slack tokens, generic hardcoded credentials), `.env` files, and destructive SQL/shell patterns
 (`DROP TABLE`, unguarded `DELETE`/`UPDATE`, `rm -rf /`, `git push --force`, `git reset --hard`,
-etc.), and shells out to TruffleHog for deeper secret scanning when it's installed (if it isn't,
-the script says so and continues with the pattern checks — see **references/hooks.md** for the
+etc.), and shells out to Gitleaks (fast, maintained ruleset) and TruffleHog (deeper, including
+live-credential verification) for additional secret scanning when either is installed (if neither
+is, the script says so and continues with the pattern checks — see **references/hooks.md** for the
 false-positive escape hatches: inline `# devskill:allow` or a `.devskill-allowlist` file). Also
 run the project's own linter/typechecker/test suite, and actually re-read your diff once for logic
 bugs the tools won't catch — a clean lint run is not the same thing as correct.
@@ -159,9 +170,12 @@ subagent calls per phase or as one continuous session.
 
 Write `specs/<task-slug>/STATUS.md` from `references/status-report-template.md`: what's working
 and verified, what's broken or risky, and exactly what was tested (Step 8's actual results, not
-its intentions). Give the user a short summary of the same, then ask directly: iterate further, or
-push? Loop back to Step 3 for another pass on the same feedback, or run `git push` (the installed
-pre-push hook is the last line of defense) once they say go.
+its intentions). Commit it — a second small local commit is fine, run the quality gate on it same
+as any other (Step 6 is cheap on a docs-only diff); STATUS.md is part of the task's record, not a
+disposable handback note, so don't leave it sitting uncommitted. Give the user a short summary of
+the same, then ask directly: iterate further, or push? Loop back to Step 3 for another pass on the
+same feedback, or run `git push` (the installed pre-push hook is the last line of defense) once
+they say go.
 
 ## Reference files
 
@@ -171,8 +185,10 @@ pre-push hook is the last line of defense) once they say go.
 | `references/changelog-template.md` | Writing/updating `CHANGELOG.md` in Step 3 |
 | `references/status-report-template.md` | Writing `STATUS.md` in Step 9 |
 | `references/tech-stack-guide.md` | Recommending a stack for a new/unspecified project in Step 2 |
+| `references/constitution-template.md` | Creating or checking a target project's `CONSTITUTION.md` in Step 2 |
 | `references/hooks.md` | Explaining what the git hooks block, tuning false positives, or troubleshooting a blocked commit/push |
 | `references/model-effort-tiers.md` | Deciding which model/effort tier to use for a given phase, especially when orchestrating the loop as separate subagent calls |
+| `references/roadmap.md` | Known limitations, deferred ideas, and notes from using this skill across other projects |
 
 ## Bundled scripts
 

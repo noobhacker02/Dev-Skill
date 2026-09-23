@@ -1,0 +1,46 @@
+name: Security gate
+
+# Server-side backstop for dev-workflow/scripts/check_staged.py — closes the gap the local git
+# hooks can't: core.hooksPath isn't versioned, so a clone that never ran install-hooks.sh gets no
+# local protection. This re-runs the exact same check against the PR's diff regardless of that.
+# See dev-workflow/references/hooks.md for what it blocks and dev-workflow/references/roadmap.md
+# for why this exists.
+
+"on":
+  pull_request:
+
+jobs:
+  check-staged:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need both the base and head commits present to diff between them
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      # Gitleaks and TruffleHog are optional deeper layers on top of the built-in pattern checks
+      # (see references/hooks.md) — install them here so CI gets the same coverage as a local
+      # clone that has them installed. Versions are pinned for reproducibility; bump deliberately.
+      # If an install step fails (network hiccup, releases API rate limit), continue-on-error lets
+      # the gate still run on the pattern checks below, which block on their own regardless.
+      - name: Install gitleaks
+        continue-on-error: true
+        run: |
+          curl -sSL -o /tmp/gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz"
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+
+      - name: Install trufflehog
+        continue-on-error: true
+        run: |
+          curl -sSL -o /tmp/trufflehog.tar.gz "https://github.com/trufflesecurity/trufflehog/releases/download/v3.82.13/trufflehog_3.82.13_linux_amd64.tar.gz"
+          tar -xzf /tmp/trufflehog.tar.gz -C /tmp trufflehog
+          sudo mv /tmp/trufflehog /usr/local/bin/trufflehog
+
+      - name: Run dev-workflow safety gate
+        run: |
+          python3 .githooks/check_staged.py --mode=push \
+            "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
