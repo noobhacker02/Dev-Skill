@@ -21,3 +21,7 @@ node_modules/
 
 # Local, per-clone git config artifacts (core.hooksPath points at tracked .githooks/, not this)
 *.local
+
+# agent-loop is a separate project (its own repo), nested here only so it stays
+# visible in this session's working directory. Never track it from Dev-Skill's repo.
+agent-loop/
