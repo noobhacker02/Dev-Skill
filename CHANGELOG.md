@@ -5,6 +5,77 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Security
+- **`check_staged.py` scanner hardened after an adversarial stress test found it catching only 3 of
+  19 real secret formats and 7 of 26 destructive commands, plus three structural bypasses.** Full
+  before/after and the exact test commands are in
+  [`docs/STRESS-TEST-REPORT.md`](docs/STRESS-TEST-REPORT.md); headline numbers:
+  `tests/stress/scan_stress.py` 32/68 → 67/68 (the one remaining failure — a secret split across
+  string concatenation, e.g. `"sk-ant-" + "api03-..."` — is a documented, deliberately out-of-scope
+  limitation: catching it would require parsing string-concatenation semantics, not pattern
+  matching), `tests/stress/scan_stress2.py` 4/8 → 6/8 (see the two accepted exceptions below).
+
+  **Secrets** — `SECRET_PATTERNS` only covered AWS keys, private-key headers, and Slack tokens.
+  Added GitHub (classic + fine-grained), Anthropic, OpenAI (incl. project keys), Stripe, and Google
+  API key formats, JWTs, and inline-password connection strings (`user:pass@host`). Generic
+  key/token/password patterns now capture the secret into a named group and check *only that value*
+  against the placeholder list (`changeme`, `example`, `<...>`, etc.) — previously the whole line was
+  checked, so a line assigning a real-looking secret to a `password` variable was waved through
+  simply because the line also contained the literal word "password".
+
+  **Destructive commands** — the old check was ~6 fixed regexes for exact flag spellings. Ported
+  `hasDangerousRm()` from `agent-loop/src/hooks.ts`'s safety net: tokenizes an `rm` invocation and
+  checks for recursive+force *independent of flag order or spelling* (`-rf`, `-fr`, `-r -f`,
+  `--recursive --force`) against a dangerous-target pattern (`/`, `~`, `$HOME` in its quoted/braced
+  forms, `..`, bare `*`) — catching both the raw and quote-stripped form of each token so
+  `rm -rf "$DIR"/` matches without the trailing slash mangling the closing quote. Added DROP INDEX,
+  TRUNCATE-without-TABLE, `WHERE 1=1`, knex `.dropTable(`, and Django
+  `.objects.all().delete()`. Fixed a DELETE/UPDATE guard-clause bug: `UPDATE ... SET a=1` (the first
+  line of a legitimately multi-line, WHERE-guarded statement) was a false positive, while a genuinely
+  unguarded single-line `DELETE FROM users` was a false *negative* — fixed by requiring UPDATE's
+  match to have its terminating `;` on the same line, and adding one-line lookahead so a `WHERE` on
+  the very next added line suppresses the DELETE finding.
+
+  **Doc-exemption abuse** — Markdown files were fully exempt from destructive-command scanning, so
+  `rm -rf /` inside a fenced ` ```bash ` block in a `SETUP.md` that CI or a copy-pasting developer
+  actually executes went completely unscanned. The scanner now fetches the full file content and
+  tracks fence state so only prose is exempt — code blocks are still scanned regardless of file
+  extension.
+
+  **Structural bypasses found by `scan_stress2.py`**:
+  - `git mv secret .env` didn't trip the `.env` check because `--diff-filter=ACM` has no `R` —
+    renamed files were invisible to `git diff --name-only`. Added `R` and `-M`.
+  - Non-ASCII filenames (e.g. `café/.env`) were octal-escaped by git's default `core.quotePath`,
+    breaking the filename regex. Now passes `-c core.quotePath=false` and uses NUL-separated
+    (`-z`) output throughout.
+  - `subprocess.run(..., text=True)` with no `errors=` raised `UnicodeDecodeError` on non-UTF-8
+    staged content; the resulting traceback happened to exit non-zero, which the test suite counted
+    as "correctly blocked" — a crash masquerading as a working control. Added
+    `encoding="utf-8", errors="replace"`.
+  - Push-mode's git helper discarded non-zero exit codes, so an unresolvable ref silently produced
+    an empty diff and passed clean. Now fails closed with an explicit `SCAN_ERROR` finding.
+  - A brand-new branch's first push diffed against the empty tree, rescanning the *entire* history
+    it forked from and false-positiving on old, already-reviewed files. `resolve_push_base()` now
+    substitutes the merge-base against a discoverable `main`/`master`/`origin/main`/`origin/master`
+    ref, falling back to the empty tree (safe, just noisier) only when none exists.
+
+  **CI-gate tampering** (`.github/workflows/security-gate.yml`) — the gate ran
+  `.githooks/check_staged.py` from the PR's own checked-out working tree, so a PR could replace the
+  scanner with `exit(0)` and pass its own gate. Not fixable in the script itself — a replaced copy of
+  a self-check has no way to defend against its own replacement. Fixed at the workflow level:
+  extracts the scanner from the immutable base-commit git object (`git show <base-sha>:...`) and
+  runs *that* copy against the PR's diff instead.
+
+  **Accepted, not fixed**: (1) the string-concatenation secret case above; (2) `scan_stress2.py`'s
+  CI-bypass test necessarily runs the *replaced* copy of the scanner directly, by design — it can
+  only be exercised for real by the workflow-level fix, not this local test; (3) `git commit
+  --no-verify` bypassing the local hook entirely — a git-native feature, not something any
+  pre-commit hook can prevent from inside itself.
+
+  Verified with `python3 tests/stress/scan_stress.py` and `python3 tests/stress/scan_stress2.py`;
+  `.githooks/check_staged.py` re-synced from the fixed source via `install-hooks.sh` so this repo's
+  own local hook enforces the current scanner.
+
 ### Added
 - `dev-workflow` skill: the full spec-first development loop (intake, tech stack, spec +
   changelog, research, execute, quality gate, local commit, local verification, status report +
