@@ -100,7 +100,8 @@ TruffleHog, and Playwright are used automatically when present and otherwise ski
 (see `dev-workflow/SKILL.md`'s `compatibility` frontmatter). No API key or separate auth needed
 beyond whatever Claude Code session you're already running it in.
 
-Once installed, Claude invokes it on its own for any non-trivial build/fix/ship request — you don't
+Once installed, Claude invokes it on its own for coding requests (measured: 8 of 8 held-out coding asks,
+0 of 2 plain questions; see CHANGELOG) — you don't
 need to name it explicitly. The first time it runs in a given target repo, it also runs:
 
 ```bash

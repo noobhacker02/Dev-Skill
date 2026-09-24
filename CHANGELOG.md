@@ -5,6 +5,14 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+- **The skill now triggers on ordinary coding requests.** Its description led with process detail
+  and only mentioned when to use it at the end. On 8 everyday requests the real model invoked it only
+  3–4 times ("add pagination to /users", "fix the January date bug", "write unit tests for the cart
+  total" were all missed). The description now opens with when to use it. On a held-out set of 8
+  coding requests plus 2 plain questions, run against the real model, it triggered 8/8 (was 3/8)
+  with 0/2 false triggers. Rerun with `node test/stress/skill-trigger.mjs` in agent-loop.
+
 ### Security
 - **`check_staged.py` scanner hardened after an adversarial stress test found it catching only 3 of
   19 real secret formats and 7 of 26 destructive commands, plus three structural bypasses.** Full
