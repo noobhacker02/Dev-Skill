@@ -1,19 +1,16 @@
 ---
 name: dev-workflow
 description: >
-  Drives a disciplined, spec-first loop for building or changing software: restate the ask in
-  plain terms, pin down the tech stack (recommend one with rationale if the project is new or
-  unspecified), write an in-depth spec plus a changelog entry, research prior art before writing
-  any code, implement, run a pre-commit quality gate on staged changes only (logic review, lint,
-  secret scan, destructive-command scan), commit locally, verify locally against the spec
-  (Playwright for anything with a browser surface, stack-appropriate tests otherwise), write a
-  short status report of what's good/bad, checkpoint with the user on whether to iterate or push,
-  and loop. Also installs tracked git hooks (pre-commit + pre-push, Gitleaks- and TruffleHog-backed
-  with a pattern-based fallback) that block secrets, .env files, and destructive SQL/shell commands
-  from ever being committed or pushed. Use this whenever the user asks to build, implement, fix, ship,
-  or "properly" do a non-trivial piece of code — phrases like "spec this out", "set up the
-  workflow", "add the safety hooks", "what stack should I use", or any multi-step feature/bugfix
-  request — even when they never say the words "spec" or "workflow" out loud.
+  Use this for ANY request to write or change code in a repository: adding a feature, route,
+  endpoint, script, CLI, function or test; fixing a bug; refactoring; or starting a new project —
+  including small, one-sentence asks like "add a /health endpoint", "fix the slugify bug" or
+  "write a function that parses dates", and even when the user never mentions specs, tests or a
+  workflow. Skip it only for questions that change no code, and one-line typo fixes. It runs a
+  spec-first loop — restate the ask, pick the stack, write a short spec and changelog entry,
+  implement, run a pre-commit safety gate (secrets, .env files, destructive commands), commit
+  locally, verify for real (Playwright when there's a browser surface), report what's good and
+  bad, and ask before pushing — and installs git hooks that block secrets and destructive
+  commands from ever being committed or pushed.
 compatibility: >
   Requires git and bash. The safety-check scripts require python3 (standard library only, no
   pip installs). Gitleaks (https://github.com/gitleaks/gitleaks) and TruffleHog
