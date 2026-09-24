@@ -1,6 +1,7 @@
 # Dev-Skill
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Security gate](https://github.com/noobhacker02/Dev-Skill/actions/workflows/security-gate.yml/badge.svg)](https://github.com/noobhacker02/Dev-Skill/actions/workflows/security-gate.yml)
 
 A Claude Code skill (`dev-workflow/`) that drives a spec-first development loop: restate the ask,
 pin the tech stack, write a spec + changelog, research prior art, implement, run a pre-commit
@@ -12,14 +13,47 @@ SQL/shell commands, plus a GitHub Actions gate that re-runs the same check serve
 ## The loop
 
 ```
-Intake → Tech stack → Spec + changelog → Research → Execute → Quality gate
-   ↑         (once)                                                  │
-   └──────────────────── Status report + checkpoint ←── Local verification ← Local commit
+ Step 0 (once)        Steps 1–2                    Steps 3–9 repeat
+ ┌───────────┐    ┌──────────────┐   ┌──────────────────────────────────────────────────┐
+ │  install  │───▶│ Intake ──────┤   │ Spec + changelog → Research → Execute → Quality   │
+ │   hooks   │    │ Tech stack   │──▶│ gate → Local commit → Local verification →         │
+ └───────────┘    └──────┬───────┘   │ Status report + checkpoint ──┐                    │
+                         │           └───────────────────────────────┼────────────────────┘
+                         ▼                                           │
+              reads CONSTITUTION.md,                     iterate? ◀──┘   push? ──▶ git push
+              checks DECISIONS.md before                 (loop to Step 3)   (pre-push hook
+              asking anything (see below)                                   is the last gate)
 ```
 
-Steps 3–9 repeat: after the status report, the user decides whether to iterate again or push, and
-either answer feeds back into the loop. See `dev-workflow/SKILL.md` for the full description of
-each step and why it exists.
+See `dev-workflow/SKILL.md` for the full description of each step and why it exists.
+
+## Avoiding guesses: questions, decisions, and plan drift
+
+Three things work together so the loop never has to silently guess what you meant, and never gets
+to re-ask something you already told it:
+
+1. **A question only gets asked if it clears three bars** (Step 1, and the same bar again in Step
+   5 if a fork shows up mid-build): the answer would actually change what gets built, it isn't
+   inferable from the repo or `CONSTITUTION.md`, and it isn't already answered in `DECISIONS.md`.
+   If several things are genuinely unclear, they get asked together in one round — not a drip-feed
+   of one question at a time. If nothing clears the bar, the skill states its interpretation and
+   moves on rather than asking out of caution.
+2. **`DECISIONS.md`** (optional, project-wide, same pattern as `CONSTITUTION.md` — see
+   `dev-workflow/references/decisions-log-template.md`) is the append-only record of every real
+   fork: what was unclear, what was decided, who decided it, and why. It's checked *before* any
+   question is asked, so the same fork never gets asked about twice across different tasks. It's
+   also what keeps a low-memory orchestrator (like the companion `agent-loop` project's Overseer)
+   informed without needing the full conversation history — the log is the interface, not
+   somebody's memory of a chat three tasks ago.
+3. **A required "Plan vs Actual" section in every `STATUS.md`** (Step 9) means a deviation from the
+   spec gets named explicitly — "matched exactly" is a required sentence when true, not something
+   left out because there was nothing to report. If execution took a different path than `SPEC.md`
+   described, the status report says exactly where and why, pointing at the `DECISIONS.md` entry if
+   the fork was resolved by asking.
+
+The net effect: the same question doesn't get asked twice, a silent guess doesn't get built without
+being named as one, and there's a durable, cross-task record of which way the project actually went
+and why — not just what any single task happened to do.
 
 ## Layout
 
@@ -36,6 +70,7 @@ dev-workflow/
     ├── status-report-template.md
     ├── tech-stack-guide.md
     ├── constitution-template.md    optional project-wide conventions file for target repos
+    ├── decisions-log-template.md   optional project-wide decision log (DECISIONS.md) for target repos
     ├── model-effort-tiers.md       which model/effort tier to use for which phase
     ├── roadmap.md                  known limitations, deferred ideas, notes from real usage
     └── hooks.md                    what the hooks block, false-positive handling, troubleshooting
@@ -72,7 +107,9 @@ secret/`.env`/destructive-command scanning on commit and push.
 works: an Overseer plus five worker phases (planner, test-designer, builder, verifier, gatekeeper)
 run a task end-to-end with a live browser UI for approving/rejecting every tool call, so the process
 can be watched and judged rather than trusted on faith. It's meant to both evaluate `dev-workflow`
-and, self-referentially, be built and improved using `dev-workflow`'s own method.
+and, self-referentially, be built and improved using `dev-workflow`'s own method. Its Overseer also
+reads a project's `DECISIONS.md` directly (indexed, not held in any one phase's session memory) when
+one exists — the same log this skill's own loop writes to.
 
 ## Contributing
 
