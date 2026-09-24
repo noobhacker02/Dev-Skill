@@ -21,8 +21,13 @@ tracks decisions and status, not the reasoning essay behind each one (link to th
 - **skill-creator's automated description-trigger optimization pass doesn't work** against the
   Claude Code CLI version this was built against — it registers the candidate skill as a slash
   command but detects triggering via a `Skill`-tool call, which a model never spontaneously invokes
-  for a command. Confirmed by manual replication (see `specs/dev-workflow-skill/STATUS.md`). Retry
-  once a fixed version of that harness exists, or tune the description from real usage instead.
+  for a command. Confirmed by manual replication (see `specs/dev-workflow-skill/STATUS.md`). Still
+  unfixed, but no longer blocking anything: `agent-loop/test/validate-dev-workflow.mjs` gets the
+  same signal a real, working way — install as a real `.claude/skills/dev-workflow/`, run one real
+  Agent SDK session with a natural request, check whether the `Skill` tool actually fires. First
+  real data point: it fired correctly, unprompted. One data point isn't enough to call triggering
+  "solved," but it's the first genuine evidence either way, and the mechanism is cheap to re-run
+  with different phrasing.
 
 ## Considered, not built
 

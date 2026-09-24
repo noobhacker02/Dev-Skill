@@ -100,13 +100,37 @@ a documentation clarity fix with no logic behind it to regress, and re-running a
 100k+-token subagent to confirm a sentence is unambiguous would cost far more than the fix's risk
 warrants.
 
+## Iteration 3: real trigger test via agent-loop, resolving the skill-creator harness gap
+
+The trigger-optimization question left open above (skill-creator's `run_eval.py` is broken for this
+CLI version) is now answered a different, better way: `agent-loop/test/validate-dev-workflow.mjs`
+(a script in the companion agent-loop project) installs this skill as a real
+`.claude/skills/dev-workflow/` in a fresh throwaway repo — the actual mechanism a user's install
+would use, not a simulated one — and runs one real Agent SDK session with an ordinary feature
+request that never says "spec" or "workflow": *"This app currently only has a /ping route. Add a
+/health route that returns JSON with the server's status and how many seconds the process has been
+running."*
+
+Result: the `Skill` tool fired unprompted with `{"skill":"dev-workflow", ...}` — a real trigger,
+not a simulated one — and every artifact the loop's steps require actually appeared and was
+independently checked by the script (not just claimed by the session): `specs/health-route/SPEC.md`
+with a proper restated-scope/requirements/deliverable, `.githooks/` installed with
+`core.hooksPath` configured, a `CHANGELOG.md` entry, two local commits and zero push attempts, and
+`specs/health-route/STATUS.md` committed rather than left as a handback note. The built `/health`
+route was then run for real (not trusted from the transcript) and returned the correct JSON.
+
+9/9 independent checks passed. This is a full, clean pass — no defects found in the skill this
+run, so nothing was changed in `SKILL.md` or its scripts as a result. Recorded as-is rather than
+inventing an improvement to justify the exercise: a validation pass with nothing to fix is itself
+useful signal, especially given how thin the skill's real usage evidence was.
+
 ## Test evidence
 
 | Test plan item | Result |
 |---|---|
 | Hooks block secrets/.env/destructive commands, commit + push, TruffleHog present and absent | pass — see functional test log in this session; Stripe-only-detected secret confirmed the TruffleHog path specifically, not just the pattern fallback |
 | Skill produces the intended end-to-end behavior (2 eval prompts, with-skill vs. baseline, 7 assertions each) | pass — 100% (7/7, 7/7) with skill vs. 43% (3/7, 3/7) baseline; benchmark.json/md and a static review viewer generated and sent to the user |
-| Skill triggers appropriately (description-trigger optimization) | not run to a valid result — harness bug in skill-creator's run_eval.py for this Claude Code CLI version (see above); not blocking |
+| Skill triggers appropriately on a natural request (real signal, not skill-creator's broken harness) | pass — see "Iteration 3" below: real `.claude/skills/dev-workflow/` install + a genuine Agent SDK session, Skill tool invoked unprompted |
 | Gitleaks catches secrets our patterns don't, ignores known examples, clean commit unaffected | pass — random AWS-shaped key and a Slack webhook both caught, AWS's documented example key correctly ignored, clean commit passed with gitleaks active |
 | CI security gate runs the same check server-side as the local hooks | pass — simulated locally with this PR's real base/head SHAs before pushing; confirmed against the live PR's Actions run after |
 | Skill respects an existing project CONSTITUTION.md rather than ignoring it | pass — 7/7 assertions, verified live |
@@ -115,6 +139,8 @@ warrants.
 
 ## Decision needed
 
-Ready to push as-is. The one open item (trigger-tuning) is explicitly deferred, not silently
-dropped — it needs either a fixed/updated skill-creator harness or real usage data, neither of
-which is available right now.
+Ready to push as-is. The trigger-tuning question is now resolved with a real pass (Iteration 3) —
+the description doesn't need tuning against this one data point alone, but is no longer flying
+blind on triggering the way it was before. skill-creator's own harness bug (broken for this CLI
+version) remains unfixed and undocumented-as-worked-around, which is fine: it's no longer blocking
+anything now that a real, working alternative signal exists.

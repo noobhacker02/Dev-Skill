@@ -56,6 +56,14 @@ All notable changes to this project are documented here. Format follows
   two-word request with zero context (correctly recognized as unanswerable without more input and
   stopped rather than fabricating a system). 19/19 assertions passed across all three — see
   `specs/dev-workflow-skill/STATUS.md`.
+- Iteration 3: real skill-triggering test via the companion `agent-loop` project (installs
+  `dev-workflow` as a real project skill in a throwaway repo, runs one real Agent SDK session with
+  an ordinary feature request that never says "spec" or "workflow"). The `Skill` tool fired
+  unprompted, and all 9 independently-checked artifacts the loop requires — `SPEC.md`, a
+  `CHANGELOG.md` entry, installed hooks, local-only commits, a committed `STATUS.md`, and a working
+  feature — were present and correct. Resolves the trigger-testing gap left open by skill-creator's
+  broken harness with a real, working alternative signal. No defects found; nothing changed in the
+  skill as a result. See `specs/dev-workflow-skill/STATUS.md`.
 
 ### Known issues
 - skill-creator's automated description-trigger optimization pass (`run_loop.py`) doesn't work
