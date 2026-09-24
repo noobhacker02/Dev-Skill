@@ -80,11 +80,28 @@ evals/evals.json                     test prompts used to validate the skill in 
 CHANGELOG.md                         this project's changelog (Keep a Changelog format)
 ```
 
-## Using the skill
+## Quickstart: install the skill in another project
 
-Point a Claude Code session at `dev-workflow/SKILL.md` (or install it as a project/personal
-skill) and it will drive the loop described there for any non-trivial build/fix/ship request. The
-first time it's used in a given target repo, it runs:
+Copy `dev-workflow/` into that project's (or your personal) skills directory so Claude Code
+auto-discovers it:
+
+```bash
+# Project-level — this project only, committed and shared with a team
+git clone https://github.com/noobhacker02/Dev-Skill.git /tmp/dev-skill-src
+mkdir -p .claude/skills
+cp -r /tmp/dev-skill-src/dev-workflow .claude/skills/dev-workflow
+
+# Personal — every project on your machine
+cp -r /tmp/dev-skill-src/dev-workflow ~/.claude/skills/dev-workflow
+```
+
+Requires **git**, **bash**, and **python3** (standard library only — no `pip install`); Gitleaks,
+TruffleHog, and Playwright are used automatically when present and otherwise skipped gracefully
+(see `dev-workflow/SKILL.md`'s `compatibility` frontmatter). No API key or separate auth needed
+beyond whatever Claude Code session you're already running it in.
+
+Once installed, Claude invokes it on its own for any non-trivial build/fix/ship request — you don't
+need to name it explicitly. The first time it runs in a given target repo, it also runs:
 
 ```bash
 bash dev-workflow/scripts/install-hooks.sh
@@ -102,7 +119,7 @@ secret/`.env`/destructive-command scanning on commit and push.
 
 ## Related projects
 
-[**agent-loop**](https://github.com/noobhacker02/test-dev-1) is a separate multi-agent orchestrator
+[**agent-loop**](https://github.com/noobhacker02/Agentic-dev-alpha) is a separate multi-agent orchestrator
 (Claude Agent SDK, TypeScript) built specifically to test whether this skill's dev lifecycle actually
 works: an Overseer plus five worker phases (planner, test-designer, builder, verifier, gatekeeper)
 run a task end-to-end with a live browser UI for approving/rejecting every tool call, so the process
