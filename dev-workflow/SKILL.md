@@ -65,6 +65,25 @@ a document. If a detail that changes scope is genuinely unclear (not guessable f
 convention), ask; otherwise state your interpretation and move on — restating and moving is itself
 the checkpoint, it doesn't require waiting for a reply unless something is truly ambiguous.
 
+**Before asking anything, check `DECISIONS.md` at the repo root (if it exists).** A question this
+project already answered doesn't get asked again — that's what makes the log worth keeping. Only
+ask a question that clears all three bars:
+
+1. The answer would actually change what gets built or how — not just its phrasing or naming.
+2. It isn't inferable from the repo, `CONSTITUTION.md`, or an existing `DECISIONS.md` entry.
+3. It isn't already answered in `DECISIONS.md` from an earlier task in this project.
+
+If more than one thing is genuinely unclear, ask all of it in one round, not one question at a
+time — repeated back-and-forth for things that could've been asked together is what makes
+questions feel like busywork rather than a real checkpoint. If nothing clears the bar, don't ask —
+state your interpretation (per the paragraph above) and move on.
+
+When a question does get asked and answered, or when you make a genuinely close call yourself
+without asking (e.g. a tech-stack pick in Step 2), log it: create `DECISIONS.md` from
+`references/decisions-log-template.md` if it doesn't exist yet, and append an entry (fork,
+decision, who decided, why). Skip this for routine implementation choices a spec would normally
+just make on its own — this log tracks real forks in the project's direction, not every detail.
+
 ## Step 2 — Tech stack
 
 Look at the repo first. Lockfiles, config files, and existing source tell you the stack — use it,
@@ -116,6 +135,13 @@ redo work later (a deprecated API, a simpler built-in, a footgun). This is not a
 
 Implement to the spec. Keep the diff scoped to what the spec describes; if you discover mid-build
 that the spec needs to change, update `SPEC.md` rather than silently drifting from it.
+
+If what you hit is a genuine fork the spec doesn't resolve — not "which variable name," but
+something that changes behavior or scope — don't silently pick one and hope: stop and ask, the same
+bar as Step 1 (would the answer change what gets built; is it not inferable from the repo,
+`CONSTITUTION.md`, or `DECISIONS.md`). Log the resolution in `DECISIONS.md` either way — asked and
+answered, or a close call you made yourself and are flagging so it's visible, not buried in a diff.
+This is what Step 9's "Plan vs Actual" section then reports on.
 
 ## Step 6 — Quality gate (staged changes only)
 
@@ -170,12 +196,17 @@ subagent calls per phase or as one continuous session.
 
 Write `specs/<task-slug>/STATUS.md` from `references/status-report-template.md`: what's working
 and verified, what's broken or risky, and exactly what was tested (Step 8's actual results, not
-its intentions). Commit it — a second small local commit is fine, run the quality gate on it same
-as any other (Step 6 is cheap on a docs-only diff); STATUS.md is part of the task's record, not a
-disposable handback note, so don't leave it sitting uncommitted. Give the user a short summary of
-the same, then ask directly: iterate further, or push? Loop back to Step 3 for another pass on the
-same feedback, or run `git push` (the installed pre-push hook is the last line of defense) once
-they say go.
+its intentions). It must include a **Plan vs Actual** section stating plainly whether execution
+matched `SPEC.md` — "matched exactly" is a required sentence when true, not something you skip
+because there's nothing to report; if it didn't match, say exactly where and why, pointing at the
+`DECISIONS.md` entry if one was logged in Step 5. The point is that a deviation gets surfaced by
+name, not left for the user to notice by diffing the spec against the code themselves. Commit it —
+a second small local commit is fine, run the quality gate on it same as any other (Step 6 is cheap
+on a docs-only diff); STATUS.md is part of the task's record, not a disposable handback note, so
+don't leave it sitting uncommitted. Give the user a short summary of the same, then ask directly:
+iterate further, or push? Loop back to Step 3 for another pass on the same feedback, or run
+`git push` (the installed pre-push hook is the last line of defense) once they say go — either way,
+log which one they picked in `DECISIONS.md` if this project is tracking one.
 
 ## Reference files
 
@@ -186,6 +217,7 @@ they say go.
 | `references/status-report-template.md` | Writing `STATUS.md` in Step 9 |
 | `references/tech-stack-guide.md` | Recommending a stack for a new/unspecified project in Step 2 |
 | `references/constitution-template.md` | Creating or checking a target project's `CONSTITUTION.md` in Step 2 |
+| `references/decisions-log-template.md` | Creating or checking a target project's `DECISIONS.md` in Step 1/5/9 |
 | `references/hooks.md` | Explaining what the git hooks block, tuning false positives, or troubleshooting a blocked commit/push |
 | `references/model-effort-tiers.md` | Deciding which model/effort tier to use for a given phase, especially when orchestrating the loop as separate subagent calls |
 | `references/roadmap.md` | Known limitations, deferred ideas, and notes from using this skill across other projects |
