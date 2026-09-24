@@ -40,7 +40,11 @@ jobs:
           tar -xzf /tmp/trufflehog.tar.gz -C /tmp trufflehog
           sudo mv /tmp/trufflehog /usr/local/bin/trufflehog
 
-      - name: Run dev-workflow safety gate
+      - name: Run dev-workflow safety gate (base branch's own copy of the scanner)
         run: |
-          python3 .githooks/check_staged.py --mode=push \
+          # Extract the scanner from the PR's *base* commit, not the checked-out working tree --
+          # otherwise a PR could replace .githooks/check_staged.py with `exit(0)` and pass its own
+          # gate. git objects at the base sha are immutable and outside the PR's control.
+          git show "${{ github.event.pull_request.base.sha }}:.githooks/check_staged.py" > /tmp/check_staged.py
+          python3 /tmp/check_staged.py --mode=push \
             "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
