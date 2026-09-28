@@ -153,3 +153,39 @@ into the skill itself rather than staying a one-off local tweak.
   database, an auth check broken by `--port 0`, the local-path leak above, and the Windows
   git-hooks bug. None of these were found by reasoning about the code in the abstract; all of them
   required actually constructing the failing case and running it.
+
+### agent-loop — a real CI failure, and two things pulled straight back into the skill
+
+- **A CI run actually failed once**, on a commit whose own diff touched only UI markup/CSS/docs —
+  nothing that could plausibly cause a server/WebSocket-timing failure. Confirmed that first (`git
+  show --stat` on the blamed commit) before treating the test as the suspect. Root cause: a fixed
+  `setTimeout(_, 200)` sleep followed by a single check of an asynchronously-populated buffer, racing
+  a real WebSocket → server → event-bus → synchronous-SQLite-write → broadcast → client-receive
+  round-trip. Tried to reproduce it 35 times locally (15 idle, 20 under artificial CPU saturation)
+  and never could — this is exactly the "couldn't reproduce it locally ≠ safe to ignore" case now in
+  Step 8: fixed the actual race (a poll-until-true helper, one case improved further to poll a
+  server-emitted completion sentinel instead of guessing a duration) rather than either bumping the
+  timeout number or shrugging at a run that "must have been a fluke," and confirmed the fix against a
+  real subsequent CI run, not just local re-runs, before considering it closed.
+- **The project's own stress-test harness had a real coverage hole**: its scripted fake SDK never
+  emitted the message type that carries cost/usage data, so the entire stress suite — despite
+  covering 10+ adversarial pipeline scenarios — had zero coverage of the actual cost-tracking
+  emission code the whole time; only the UI's separate summing logic was ever exercised. Found by
+  asking "does this fake actually simulate the real thing's full behavior," not by a test failing.
+  Fixing it then immediately surfaced a second-order bug in the fix's own check (comparing against
+  *attempted* calls instead of *completed* ones, misfiring on a call that throws before completing)
+  and a third in that fix's shell idiom (`grep -c ... || echo 0` double-prints on a genuine
+  zero-match file, because `grep -c` already writes "0" to stdout before its exit-1 status makes
+  `||` fire) — each caught by testing the fix itself against a real input before trusting it, the
+  same discipline applied one layer deeper than usual.
+- **One dangerous capability, found in one syntactic form, was missing its sibling forms**: the
+  Bash-approval analyzer already correctly refused to turn a `VAR=value cmd` prefix into a reusable
+  "don't ask again" rule (an approved `NODE_OPTIONS=... npm test` shouldn't bless a differently-poisoned
+  `npm test` later) — but the *standalone* forms of the identical risk (`export`, `set`, `declare`,
+  `unset`, `alias`, `readonly` — which mutate the same persistent-shell state, just more durably
+  across separate calls, not just for one line) weren't in the same exclusion list. Found by asking
+  "what are all the ways to achieve this same effect," not by a new bug report.
+- Pulled straight into `SKILL.md`'s Step 8 (not just recorded here): treat a non-reproducing CI
+  failure as real until the blamed commit is cleared by its own diff; audit your own test
+  fixtures/harnesses for behavior they never actually simulate; and when one form of a risk is
+  handled, check for the other grammars of the same capability before calling it closed.

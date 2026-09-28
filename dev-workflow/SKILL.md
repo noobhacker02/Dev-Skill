@@ -191,6 +191,27 @@ they were generated: a local path, a token, or other output can leak through a r
 a way no text-based scan (including this skill's own Step 6 gate, which only ever sees staged *text*
 diffs — a binary file's diff is just "Binary files differ") will ever catch.
 
+A CI failure that doesn't reproduce locally is not evidence it's safe to ignore. Before calling
+anything a flake, check whether the commit CI blamed could plausibly have caused it at all (read its
+actual diff) — if it touched none of the failing code's dependencies, the test itself is the
+suspect, not the commit. Trace the failure to a real mechanism (a fixed `sleep`-then-check-once
+racing a genuine multi-hop round-trip is a common one) and fix that mechanism, even when dozens of
+local re-runs — including under deliberately added CPU load — won't reproduce it; "couldn't
+reproduce it" and "it's fine" are different claims, and only a fix to the actual race closes the gap.
+Confirm the fix against the real CI environment once pushed, not just locally — a race that depends
+on machine load won't necessarily show up the same way on your own machine.
+
+Your own test fixtures and harnesses are part of what Step 8 verifies, not exempt from it. A stub or
+fake that never exercises a whole class of real behavior (a scripted fake API client that never sends
+the message type carrying cost data, say) means every test built on it has a blind spot nobody
+notices until something downstream breaks — audit what a fake actually simulates against what the
+real thing does, the same way you'd audit application code for a missed case.
+
+When a dangerous capability is found in one syntactic form, check for the others before calling it
+fixed. A shell command that redirects behavior via `VAR=value cmd` and one that does the identical
+thing via a bare `export VAR=value` are the same underlying risk in two different grammars — finding
+and fixing only the first form because it's the one you happened to test leaves the second wide open.
+
 ## Model & effort: don't spend the same tier everywhere
 
 Steps 1–4 (Plan) are where a wrong call is most expensive and cheapest to prevent — use the

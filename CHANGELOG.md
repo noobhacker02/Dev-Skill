@@ -33,6 +33,20 @@ All notable changes to this project are documented here. Format follows
   "Fixed" above) — none of them found by reading the code alone.
 - **`references/roadmap.md`** gained a "known limitations" entry for the binary-artifact gap above,
   and the new dated notes entry with the full round's findings.
+- **Step 8 gained three more lessons from a further round of using this skill's own hooks on
+  agent-loop**, each pulled straight into the step's wording, not just recorded in the roadmap: (1)
+  a CI failure that doesn't reproduce locally is not evidence it's safe to ignore — check whether the
+  blamed commit's own diff could plausibly have caused it before treating the test as the suspect,
+  then fix the real mechanism (a fixed-sleep-then-check-once race, in the case that prompted this)
+  and confirm against real CI, not just local re-runs; (2) your own test fixtures and harnesses are
+  part of what Step 8 verifies — a fake that never exercises a whole class of real behavior (a
+  scripted stand-in for a real API that never sent the message type carrying cost data, in this
+  case) leaves a blind spot nobody notices until something downstream breaks; (3) when one syntactic
+  form of a dangerous capability is found and fixed, check for the other grammars of the identical
+  underlying risk before calling it closed (an approval analyzer that correctly refused to
+  rule-ify `VAR=value cmd` but missed the standalone `export`/`set`/`declare` forms of the same
+  persistent-state mutation). Full detail and the two follow-on bugs the fix for (1) caught in
+  itself before it could be trusted: `references/roadmap.md`'s new dated entry.
 
 ### Security
 - **`check_staged.py` scanner hardened after an adversarial stress test found it catching only 3 of
