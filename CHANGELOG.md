@@ -19,6 +19,21 @@ All notable changes to this project are documented here. Format follows
   coding requests plus 2 plain questions, run against the real model, it triggered 8/8 (was 3/8)
   with 0/2 false triggers. Rerun with `node test/stress/skill-trigger.mjs` in agent-loop.
 
+### Changed
+- **Step 8 (Local verification) now says explicitly what "verified" means for security- or
+  trust-relevant work**: construct the specific bypass you're worried about and actually run it,
+  rather than reasoning about whether it should hold — and, for anything that produces artifacts a
+  person looks at later (a screenshot, an exported log, a recording), check what's actually visible
+  in them before committing, since this skill's own Step 6 gate only ever sees staged *text* diffs
+  and can't catch a leak baked into binary content. Backed by a real second cross-project round of
+  using this skill's hooks (`references/roadmap.md`'s new "extended adversarial-review round" entry):
+  the exact methodology now named in Step 8 is what found a supply-chain approval bypass, a terminal
+  escape-injection hole, a browser-session cleanup bug, a `--port 0` auth break, a local-path leak
+  through a committed screenshot, and a Windows-specific bug in this skill's own git hooks (see
+  "Fixed" above) — none of them found by reading the code alone.
+- **`references/roadmap.md`** gained a "known limitations" entry for the binary-artifact gap above,
+  and the new dated notes entry with the full round's findings.
+
 ### Security
 - **`check_staged.py` scanner hardened after an adversarial stress test found it catching only 3 of
   19 real secret formats and 7 of 26 destructive commands, plus three structural bypasses.** Full

@@ -18,6 +18,19 @@ tracks decisions and status, not the reasoning essay behind each one (link to th
   in Step 6 are the deeper layers, not the regexes. Not planned to change; a real SQL parser here
   would be a lot of complexity for a backstop check that already has two better-resourced layers
   behind it.
+- **The security gate only ever sees staged text diffs, never binary content.** A leak baked into a
+  committed image or video (a real absolute filesystem path visible in a UI screenshot, say) is
+  invisible to `check_staged.py`'s secret/destructive-pattern scanning, which runs on `git diff`
+  text output — a binary file's diff is just "Binary files differ," nothing to pattern-match. Found
+  for real in agent-loop: a committed UI screenshot and its matching demo video both showed the
+  sandbox's own internal directory structure through an app-level leak the scanner had no way to
+  see (that project's `docs/LEAK-REVIEW-ui-video.md` has the full writeup). Not a `check_staged.py`
+  defect to fix — a scanner reading text diffs can't reasonably decode arbitrary binary formats —
+  but a real gap: a project that regularly commits screenshots or recordings of its own UI needs a
+  human actually looking at what's rendered in them, since this gate won't. Reflected in Step 8's
+  wording (verify what artifacts actually show, not just that they were generated) rather than a new
+  script, since a format-specific scanner is a lot of machinery for a gap hit exactly once so far —
+  revisit if it recurs.
 - **skill-creator's automated description-trigger optimization pass doesn't work** against the
   Claude Code CLI version this was built against — it registers the candidate skill as a slash
   command but detects triggering via a `Skill`-tool call, which a model never spontaneously invokes
@@ -106,3 +119,37 @@ into the skill itself rather than staying a one-off local tweak.
   passes right over. Reinforces Step 8 as written; no wording change needed, but a good concrete
   example worth keeping if Step 8 is ever revised, since "test the real usage shape, not just the
   wiring" is otherwise easy to nod at without a case that shows the cost of skipping it.
+
+### agent-loop — extended adversarial-review round (cross-platform + git-hooks bug)
+
+- What needed adjusting, and pulled straight back into the skill (not just noted here): the
+  installed `pre-commit`/`pre-push` hooks only ever looked for a `python3` command on `PATH`. Many
+  Windows Python installs (the standard python.org installer, in particular) only add `python`.
+  Confirmed empirically: stripping `python3` from `PATH` and leaving only `python` made the old hook
+  fail outright (`python3 not found`, exit 1). Fixed in `scripts/hooks/pre-commit`/`pre-push`
+  themselves, not just agent-loop's installed copy: try `python3` then `python`, verifying whichever
+  is found is actually Python 3 (not a stray Python 2) via a real version check before trusting it.
+  A real fix to the skill's own bundled hooks, found by using them on a second project and actually
+  auditing for a platform this skill had only ever been run on Linux/macOS for — exactly the loop
+  this file exists to close.
+- A leak class the quality gate structurally can't catch, found the same way Step 8's wording now
+  calls out directly: doing an adversarial pass on agent-loop's UI/video artifacts (not prompted by
+  `check_staged.py`, which never flagged it — the leak was in binary PNG/webm content, not a staged
+  text diff) turned up a real absolute filesystem path baked into a committed screenshot and its
+  matching demo video. See the new "known limitations" entry above.
+- Worth pulling back further than the two changes above (the Python-detection fix, the Step 8
+  wording)? Not yet on the binary-artifact gap specifically — a format-specific scanner is a lot of
+  machinery for something hit once so far; revisit if it recurs on a project that commits screenshots
+  routinely enough for that cost to make sense.
+- The methodology that actually found all of the above, worth naming plainly since it's now backed
+  by more than one project's worth of results: hypothesize a concrete, specific way something could
+  fail (not "is this secure?" but "what happens if I strip python3 from PATH" or "what does this
+  screenshot actually show pixel-for-pixel"), go verify it for real against the running code, fix
+  what's confirmed, add a permanent regression test for it, then move to the next surface. Across
+  this round alone that process found and closed: a supply-chain approval bypass (a "don't ask
+  again" rule that didn't actually narrow to the approved package), a terminal escape-sequence
+  injection hole (untrusted text reaching a real terminal unsanitized), a browser-session cleanup
+  bug that could leak a Chromium process *and* leave a run stuck "running" forever in its own audit
+  database, an auth check broken by `--port 0`, the local-path leak above, and the Windows
+  git-hooks bug. None of these were found by reasoning about the code in the abstract; all of them
+  required actually constructing the failing case and running it.

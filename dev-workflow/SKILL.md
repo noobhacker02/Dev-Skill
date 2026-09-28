@@ -177,6 +177,20 @@ use the stack's normal test tooling otherwise (unit/integration tests, CLI invoc
 requests). If you can't actually run/observe something (no display, no way to hit a live
 dependency), say so explicitly in the status report rather than claiming it was tested.
 
+For anything security- or trust-relevant (an approval/permission gate, an auth check, a sandbox
+boundary, a scanner or validator, "don't ask again" style rules), verification means more than
+confirming the happy path: construct the specific bypass you're worried about and actually run it,
+the way an attacker or a careless caller would, rather than reasoning about whether it should hold.
+"The test suite passes" and "I traced the code and it looks safe" are not the same claim as "I ran
+the bypass and it failed" — only the last one is verification (this is how a real multi-agent
+orchestrator's supply-chain-approval bypass, terminal-escape-injection hole, and a leaked local
+filesystem path were actually found — reasoning about the code alone had already missed all three).
+If the task produces artifacts a person will look at later — a screenshot, an exported log, a saved
+report, a recorded video — check what's actually visible in them before committing, not just that
+they were generated: a local path, a token, or other output can leak through a rendered artifact in
+a way no text-based scan (including this skill's own Step 6 gate, which only ever sees staged *text*
+diffs — a binary file's diff is just "Binary files differ") will ever catch.
+
 ## Model & effort: don't spend the same tier everywhere
 
 Steps 1–4 (Plan) are where a wrong call is most expensive and cheapest to prevent — use the
