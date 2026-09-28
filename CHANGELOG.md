@@ -6,6 +6,12 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Fixed
+- **`pre-commit`/`pre-push` only ever looked for a `python3` command.** Many Windows Python installs
+  only add `python`, not `python3`, to `PATH`. Confirmed empirically: stripping `python3` from `PATH`
+  and leaving only `python` made the old hook fail outright (`python3 not found`, exit 1); the fixed
+  hook tries `python3` then `python`, verifying whichever it finds is actually Python 3 (not a stray
+  Python 2) before trusting it, and succeeds in the same scenario. Found while auditing agent-loop
+  (which installs these same hooks) for Linux/macOS/Windows portability.
 - **The skill now triggers on ordinary coding requests.** Its description led with process detail
   and only mentioned when to use it at the end. On 8 everyday requests the real model invoked it only
   3–4 times ("add pagination to /users", "fix the January date bug", "write unit tests for the cart
