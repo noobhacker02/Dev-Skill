@@ -218,6 +218,12 @@ the message type carrying cost data, say) means every test built on it has a bli
 notices until something downstream breaks — audit what a fake actually simulates against what the
 real thing does, the same way you'd audit application code for a missed case.
 
+When the fake stands in for the thing that *decides* (a model, a person, a network), run the real one through
+your real hooks at least once, on the cheapest tier. A scripted caller can't surprise you. agent-loop's scripted
+SDK never emitted a tool call, so nothing had shown what a model does with the gates: the first real run
+showed one refused click being asked for eight more times, each a fresh prompt for a person to read. Assert
+only what the gates guarantee whatever the model chooses, and print what it chose.
+
 When a dangerous capability is found in one syntactic form, check for the others before calling it
 fixed. A shell command that redirects behavior via `VAR=value cmd` and one that does the identical
 thing via a bare `export VAR=value` are the same underlying risk in two different grammars — finding
@@ -276,7 +282,14 @@ and verified, what's broken or risky, and exactly what was tested (Step 8's actu
 its intentions). It must include a **Plan vs Actual** section stating plainly whether execution
 matched `SPEC.md` — "matched exactly" is a required sentence when true, not something you skip
 because there's nothing to report; if it didn't match, say exactly where and why, pointing at the
-`DECISIONS.md` entry if one was logged in Step 5. The point is that a deviation gets surfaced by
+`DECISIONS.md` entry if one was logged in Step 5.
+
+It must also say **what was asked and what was delivered, line by line**, in a short table: each thing
+the user actually said, and whether it exists, exists in part, or doesn't. Anything scaled back, deferred or
+reinterpreted is named as such, with why. Never describe a smaller version as a deliberate design choice in a
+changelog or README unless the user agreed to it: agent-loop's "jokes with life in them, dark but not too
+dark, about how the tool is used" shipped as ten dry idle lines, recorded as "deliberately not dark", and was
+only found when the user asked whether it had been done properly. The point is that a deviation gets surfaced by
 name, not left for the user to notice by diffing the spec against the code themselves. Commit it —
 a second small local commit is fine, run the quality gate on it same as any other (Step 6 is cheap
 on a docs-only diff); STATUS.md is part of the task's record, not a disposable handback note, so

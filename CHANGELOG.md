@@ -6,6 +6,15 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Changed
+- **Steps 8 and 9 carry two lessons from agent-loop's real-model tests and its persona.**
+  - Step 8: when a fake stands in for the thing that decides (a model, a person, a network), run the real one
+    through your real hooks once, on the cheapest tier, and assert only what the gates guarantee. That found a
+    model asking for one refused action eight more times, which no scripted caller could.
+  - Step 9: the status report must say what was asked and what was delivered, line by line, and must never call a
+    scaled-back version a deliberate design choice unless the user agreed. Jokes that were asked for as dark,
+    context-aware and everywhere shipped as ten dry idle lines, described as deliberate.
+
+  Details in `references/roadmap.md`.
 - **Steps 4 and 8 carry lessons from agent-loop's desktop computer use (Stages 3-6).**
   - Step 4: read and run a third-party dependency's real surface before designing around it. A plan that
     assumed an MCP server was really an in-process library with ~60 tools, which changed the design to a

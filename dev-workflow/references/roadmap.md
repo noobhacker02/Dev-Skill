@@ -233,3 +233,25 @@ into the skill itself rather than staying a one-off local tweak.
 - Pulled into `SKILL.md`: Step 4 now says to read and run a dependency's real surface before designing around
   it. Step 8 now covers what to do with a surviving mutation, adversary-side assertions, timeouts on calls with
   side effects, and testing a dependency's fail-closed behaviour.
+
+### agent-loop: real model in the loop, and a persona built properly (2026-09-30)
+
+- **A fake that stands in for the decider can't surprise you.** The scripted SDK never emitted a tool call, so
+  the assembled flow (real SDK, real hooks, real window) had never run. Two opt-in tests (a few cents on the
+  cheapest model) did it once each and found one thing no scripted test could: told "no" to a click, the model
+  asked for it eight more times. Fixed with a limit of three refused requests in a row, verified with the real
+  model and by mutation. The same tests also showed a wrong assumption of mine (capture asks too), which
+  was the test's bug, not the product's.
+- **A request shipped at a fraction and described as done.** The ask was jokes with life in them, dark but not
+  too dark, about how the tool is used, with bite that isn't toxic. What shipped was ten dry lines and a changelog
+  entry calling "not genuinely dark" deliberate. Found only when the user asked whether it was done properly.
+  The rebuild is a voice with rules that can be tested: it never reaches a model (import graph), carries no
+  untrusted text (hostile input in every field, every note still exactly a catalog line), is never inside an
+  approval (a real prompt checked), can be turned off, and can't break a run.
+- **Taste needs guardrails you can assert.** "Is it funny" is for a person; "can it hurt anything" is a set of
+  properties, each checked by trying to break it. Eighteen mutations, three survivors: a test that could never
+  produce what it asserted was absent, one that looked for `[object` where the bug prints `Object`, and a
+  defensive guard nothing exercised. Each survivor became a stronger test.
+- Pulled into `SKILL.md`: Step 8 says to run the real decider once behind your fake. Step 9 requires an
+  asked-vs-delivered table and forbids calling a scaled-back version deliberate without the user's agreement.
+
