@@ -189,3 +189,22 @@ into the skill itself rather than staying a one-off local tweak.
   failure as real until the blamed commit is cleared by its own diff; audit your own test
   fixtures/harnesses for behavior they never actually simulate; and when one form of a risk is
   handled, check for the other grammars of the same capability before calling it closed.
+
+### agent-loop — computer-use Stage 1 (browser refs, coordinates, tabs) — 2026-09-30
+
+- **The spec's own "verified facts" table missed a missing file.** The code cited
+  `docs/BROWSER-AGENT.md` in several places and the spec said to update it, but the file had never
+  existed. The table checked the code it described, not the files it cited.
+- **A boundary everyone trusted leaked through the channels its mechanism doesn't see.**
+  Request-level interception had been tested against links, redirects and fetches. Probing the
+  channels the interception API is documented not to cover turned up two leaks: a page could open a
+  WebSocket, and send WebRTC packets, to a forbidden host.
+- **A mitigation named for exactly the problem didn't work.** Chromium's WebRTC IP-handling policy
+  flag let the same packets through, even to a non-loopback address. Only removing the API in every
+  page realm (checked across iframes, `data:`/`blob:` frames and popups) stopped them.
+- **Zero is only evidence with a control.** The leak test first runs the same page in an undefended
+  browser and requires the counters to see traffic, then requires zero with the defences on. Five
+  mutations of the built code (one per defence) each fail it.
+- Pulled into `SKILL.md`: Step 3 now says to check that cited files exist. Step 8 now says to probe a
+  mechanism's documented blind spots, test the fix itself, and give every "nothing got through"
+  result a control run and a mutation check.

@@ -5,6 +5,18 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Changed
+- **Step 3 and Step 8 carry lessons from agent-loop's computer-use Stage 1.**
+  - Step 3: check that every file a spec cites actually exists. agent-loop's code cited a design doc
+    that was never written, and the spec inherited the gap.
+  - Step 8: probe what a boundary's underlying mechanism is documented not to cover. That turned up
+    real WebSocket and WebRTC escapes past a request-interception sandbox.
+  - Step 8: test the mitigation itself. A browser flag named for the WebRTC problem didn't stop it.
+  - Step 8: a "nothing got through" result needs a control run that proves the detector sees the
+    leak, plus a mutation check that removing each defence fails the test.
+
+  Details in `references/roadmap.md`.
+
 ### Fixed
 - **`pre-commit`/`pre-push` only ever looked for a `python3` command.** Many Windows Python installs
   only add `python`, not `python3`, to `PATH`. Confirmed empirically: stripping `python3` from `PATH`

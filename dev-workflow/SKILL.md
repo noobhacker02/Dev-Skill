@@ -112,6 +112,10 @@ request, in-scope vs out-of-scope, the chosen stack, requirements, exactly what 
 deliverable is, and — critically — the test plan (what will be checked in Step 8 and how). Writing
 the test plan now, before code exists, is what makes Step 8 more than a vibe check.
 
+When the spec lists facts about the existing code, check that every file it cites actually exists,
+not just the code it describes. Source comments can point at a design doc nobody ever wrote, and a
+spec that says "update docs/X.md" inherits that gap.
+
 Add an entry under `Unreleased` in the repo's root `CHANGELOG.md` (create it from
 `references/changelog-template.md` if it doesn't exist yet — Keep a Changelog format). Update both
 files again at the end of the loop if scope shifted during implementation; the spec and changelog
@@ -211,6 +215,22 @@ When a dangerous capability is found in one syntactic form, check for the others
 fixed. A shell command that redirects behavior via `VAR=value cmd` and one that does the identical
 thing via a bare `export VAR=value` are the same underlying risk in two different grammars — finding
 and fixing only the first form because it's the one you happened to test leaves the second wide open.
+
+When a boundary rests on a library mechanism, read what that mechanism is documented *not* to cover
+and probe each gap. A browser sandbox enforced by request interception had held against links,
+redirects and background fetches. It still let a page open a WebSocket and send WebRTC packets to a
+forbidden host, because the interception API never sees either one; its own docs said so. Test the
+fix the same way. A browser flag named for exactly this problem (Chromium's WebRTC IP-handling
+policy) sent the same packets through; only removing the API in every page realm stopped them.
+
+A "nothing got through" result needs two companions before it counts:
+
+- **A control run.** Point the same probe at an undefended setup and confirm the detector sees the
+  leak. Otherwise zero might only mean the environment can't observe it (a loopback alias the OS
+  doesn't route, say). When the control can't observe it either, report the check as skipped, not
+  passed.
+- **A mutation check.** Break each defence in the built output, one at a time, and confirm the test
+  fails. A test that still passes with the defence removed was never testing it.
 
 ## Model & effort: don't spend the same tier everywhere
 
