@@ -6,6 +6,16 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Changed
+- **Steps 4 and 8 carry lessons from agent-loop's desktop computer use (Stages 3-6).**
+  - Step 4: read and run a third-party dependency's real surface before designing around it. A plan that
+    assumed an MCP server was really an in-process library with ~60 tools, which changed the design to a
+    narrow interface of the project's own.
+  - Step 8: when a mutation survives, say whether the test was weak or the defence redundant; give a
+    containment test an adversary that records what it receives, and assert on that too; treat a timeout on a
+    call with side effects as "may have happened", not as a failure; and test a dependency's fail-closed
+    behaviour in an environment built to trigger it.
+
+  Details in `references/roadmap.md`.
 - **Step 3 and Step 8 carry lessons from agent-loop's computer-use Stage 1.**
   - Step 3: check that every file a spec cites actually exists. agent-loop's code cited a design doc
     that was never written, and the spec inherited the gap.

@@ -132,6 +132,13 @@ spec's approach will actually produce the spec's output, and surface anything th
 redo work later (a deprecated API, a simpler built-in, a footgun). This is not a literature review
 — stop once you're confident, not once you've read everything.
 
+When the plan leans on a third-party package or service, read and run its real surface before designing
+around it, not just its README or your memory of it. One plan assumed a driver was an MCP server to spawn; it
+was an in-process native library with about sixty tools, most of which (clipboard, full-screen capture,
+launch and kill app) must never be reachable. That changed the design: a narrow interface of your own
+with only the methods you'll allow, so the rest isn't "forbidden" but absent, plus a test that puts a trap on
+every other method of the real thing.
+
 ## Step 5 — Execute
 
 Implement to the spec. Keep the diff scoped to what the spec describes; if you discover mid-build
@@ -231,6 +238,24 @@ A "nothing got through" result needs two companions before it counts:
   passed.
 - **A mutation check.** Break each defence in the built output, one at a time, and confirm the test
   fails. A test that still passes with the defence removed was never testing it.
+
+When a mutation survives, say which of two things it is, and don't move on until you have: the test wasn't
+testing what it claimed (strengthen it), or the defence is redundant and nothing can observe it (say so).
+One test claimed "typing always names the target window" and passed with the window name removed, because the
+target happened to still have focus; making an adversary steal focus *between* the two steps is what made it
+mean something.
+
+For a control that stops something reaching something else, give the test an adversary that records
+everything it receives, and assert on the adversary's record as well as on the refusal. A refusal that
+still delivers the input passes the first check alone.
+
+A timeout on a call with side effects is not a failure, it's an unknown: the call can complete later, after
+every check you made has stopped meaning anything. Treat a timed-out action as "may have happened" and stop
+sending, rather than reporting an error and carrying on. A timeout on a read is just an error.
+
+Fail-closed behaviour of something you depend on is a claim like any other. Check it in an environment built to
+trigger it (no window manager, so the driver can't focus anything), and make the normal tests wait for the
+dependency to be ready rather than racing it: a correct refusal during startup looks exactly like a flaky test.
 
 ## Model & effort: don't spend the same tier everywhere
 

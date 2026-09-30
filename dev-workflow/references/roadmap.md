@@ -208,3 +208,28 @@ into the skill itself rather than staying a one-off local tweak.
 - Pulled into `SKILL.md`: Step 3 now says to check that cited files exist. Step 8 now says to probe a
   mechanism's documented blind spots, test the fix itself, and give every "nothing got through"
   result a control run and a mutation check.
+
+### agent-loop: desktop computer use, Stages 3-6 (2026-09-30)
+
+- **The plan was wrong about what the dependency was.** The spec said to spawn a driver and talk MCP over stdio.
+  Reading and running the package showed an in-process native SDK with ~60 tools (clipboard, full-desktop
+  capture, launch/kill app, hotkeys, config...). The fix was a design change, not a patch: a narrow interface of
+  the project's own with only the methods it allows, an adapter over it, and a stand-in SDK with a trap on every
+  other method. The controls live in code the model can't argue with; the driver only executes.
+- **Two real defects came out of asking what a mechanism means when it fails.** A driver call that timed out
+  was reported as an error but could still act later, past the approval and every fence; and nothing bounded
+  what the native driver returned (about a gigabyte of disk over a session). Neither was found by reading the
+  happy path.
+- **A surviving mutation found a test that didn't test what it claimed.** The "a decoy holding focus gets no
+  keystrokes" scenario passed with typing that named no window at all. The adversary had to steal focus between
+  the click and the typing for the test to mean anything. A second survivor was redundant defence in depth,
+  which is worth saying out loud rather than leaving as an unexplained gap.
+- **Correct fail-closed behaviour looked like a flaky test.** The driver refuses to send input until the window
+  manager is ready, which it is not for the first second of a run. Fixed by waiting for readiness, and by giving
+  the fail-closed claim its own test in an environment built to trigger it.
+- **Every threat got an exploit built from real processes**, with two apps logging everything they receive (the
+  chosen target and an adversary that must end with nothing), so a refusal only counted if the adversary's log
+  was empty too.
+- Pulled into `SKILL.md`: Step 4 now says to read and run a dependency's real surface before designing around
+  it. Step 8 now covers what to do with a surviving mutation, adversary-side assertions, timeouts on calls with
+  side effects, and testing a dependency's fail-closed behaviour.
