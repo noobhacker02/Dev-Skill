@@ -6,6 +6,11 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Changed
+- **Step 8 carries one more lesson, from agent-loop's lineage view.** When you build a view derived from data
+  another part of the product already shows, put the two side by side and treat every disagreement as a bug in
+  one of them (that is how a "Files changed" panel listing a refused `.env` write was found), and cross-check
+  every total against an independent count of the raw data, not against the view's own arithmetic. Details in
+  `references/roadmap.md`.
 - **Step 8 carries one more lesson from agent-loop's persona.** A feature people experience (commentary,
   notifications, pacing, ordering) is not done when its safety tests pass: run it against deterministic data
   shaped like real runs and read what comes out. That found the persona's own gap rule swallowing every agent's

@@ -232,6 +232,13 @@ agent's voice and every veto, the feature's whole point. Build the simulator fro
 it deterministic, and assert the shape of what a person would see (nothing silent, nothing a flood, nothing
 repeated, the key moments present), not the wording.
 
+When you build a view derived from data another part of the product already shows, put the two side by side and
+treat every disagreement as a bug in one of them. agent-loop's lineage tree credits a file only after the write
+succeeded; its older "Files changed" panel recorded the attempt, so it listed a write the human had refused, even to
+a `.env`. And cross-check every total the new view reports against an independent count of the raw data (never
+only against its own arithmetic): that comparison caught a lying test simulator (10 attempts against 11 in the
+events) the same way.
+
 When a dangerous capability is found in one syntactic form, check for the others before calling it
 fixed. A shell command that redirects behavior via `VAR=value cmd` and one that does the identical
 thing via a bare `export VAR=value` are the same underlying risk in two different grammars — finding

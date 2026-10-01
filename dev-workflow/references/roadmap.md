@@ -271,3 +271,21 @@ into the skill itself rather than staying a one-off local tweak.
 - Pulled into `SKILL.md`: Step 8 now says to run a human-experienced feature against realistic simulated data
   and assert the shape of what a person would see.
 
+### agent-loop: the lineage view (2026-10-01)
+
+- **A derived view is a second opinion on the data.** The lineage tree attributes a file only after the write
+  succeeded. Next to it, the older "Files changed" panel listed a refused write to a `.env`, because it recorded
+  the attempt. Nobody had noticed in months. Building the new view and comparing it with the old one found a bug
+  in the old one.
+- **Cross-check totals against the raw events, not against the view's own sums.** Node count, prompts, tool
+  calls, repairs and cost are each compared with an independent count over the event stream on realistic runs. That
+  flagged 10 against 11 attempts and led to the test simulator numbering a second attempt twice, which had also
+  put "attempt 2" twice into the persona's screenshots.
+- **Make the read-only choice on purpose and write it down.** The research said shared mutable logs between
+  agents are where multi-agent systems get races, so the view is derived from events and nothing can write to it.
+  It also does not commit to the user's repository on its own; that would be a decision for them.
+- **Mutation survivors again named the untested paths** (an answer arriving during a retry, a reconnect clearing
+  an old tree, the clock of an unfinished run): 46 breaks, all caught, three missing cases added.
+- Pulled into `SKILL.md`: Step 8 now says to put a derived view beside the data it derives from, treat every
+  disagreement as a bug, and cross-check totals against independent counts of the raw data.
+
