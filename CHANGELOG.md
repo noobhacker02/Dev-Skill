@@ -6,6 +6,10 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Changed
+- **Step 8 carries one more lesson from agent-loop's persona.** A feature people experience (commentary,
+  notifications, pacing, ordering) is not done when its safety tests pass: run it against deterministic data
+  shaped like real runs and read what comes out. That found the persona's own gap rule swallowing every agent's
+  voice and every veto, which no test had asserted. Details in `references/roadmap.md`.
 - **Steps 8 and 9 carry two lessons from agent-loop's real-model tests and its persona.**
   - Step 8: when a fake stands in for the thing that decides (a model, a person, a network), run the real one
     through your real hooks once, on the cheapest tier, and assert only what the gates guarantee. That found a

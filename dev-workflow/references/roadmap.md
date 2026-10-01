@@ -255,3 +255,19 @@ into the skill itself rather than staying a one-off local tweak.
 - Pulled into `SKILL.md`: Step 8 says to run the real decider once behind your fake. Step 9 requires an
   asked-vs-delivered table and forbids calling a scaled-back version deliberate without the user's agreement.
 
+### agent-loop: judging the persona on realistic runs (2026-10-01)
+
+- **Passing safety tests is not a working feature.** The persona had 24 checks and 18 caught mutations and had
+  still never been seen on a run longer than a second. A deterministic simulator shaped from recorded numbers
+  (6-minute typical run, 36-minute run with three vetoes, a speed-approver, a failure, a 2:40 a.m. start)
+  showed the minimum-gap rule swallowed every agent's opening line and every Overseer veto, while the generic
+  filler took the slots. No test could have found that; reading the replay did.
+- **Fix the model, not the number.** Raising or lowering the gap would not have helped. The notes needed a
+  priority (key vs seasoning), a template memory (no repeats in a run), and context (a line that says "everyone
+  before me said yes" must not speak after three vetoes).
+- **Mutation survivors came in three kinds again:** guards another check already makes redundant (deleted),
+  a boundary no test pinned exactly (100th call versus 101st), and hostile numbers that never reached the code
+  under test. Saying which kind each is was the useful part.
+- Pulled into `SKILL.md`: Step 8 now says to run a human-experienced feature against realistic simulated data
+  and assert the shape of what a person would see.
+

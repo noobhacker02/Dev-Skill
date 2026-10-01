@@ -224,6 +224,14 @@ SDK never emitted a tool call, so nothing had shown what a model does with the g
 showed one refused click being asked for eight more times, each a fresh prompt for a person to read. Assert
 only what the gates guarantee whatever the model chooses, and print what it chose.
 
+Tests that pass are not the same as a feature that works for the person using it. Before calling a feature
+that people experience (commentary, notifications, a dashboard, any pacing or ordering) done, run it against
+data shaped like the real thing and read what comes out. agent-loop's persona passed 24 safety checks and had
+never been seen on a run longer than a second; replaying realistic runs showed its own gap rule swallowed every
+agent's voice and every veto, the feature's whole point. Build the simulator from numbers you recorded, make
+it deterministic, and assert the shape of what a person would see (nothing silent, nothing a flood, nothing
+repeated, the key moments present), not the wording.
+
 When a dangerous capability is found in one syntactic form, check for the others before calling it
 fixed. A shell command that redirects behavior via `VAR=value cmd` and one that does the identical
 thing via a bare `export VAR=value` are the same underlying risk in two different grammars — finding
