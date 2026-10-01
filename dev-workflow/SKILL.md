@@ -266,6 +266,26 @@ One test claimed "typing always names the target window" and passed with the win
 target happened to still have focus; making an adversary steal focus *between* the two steps is what made it
 mean something.
 
+A test that asserts something *didn't* happen ("silent while replaying", "never reads outside the folder", "no network
+request") passes trivially if the setup never made it possible. First assert the precondition happened, then assert the
+silence. agent-loop's "replayed history makes no sound" test emitted approval events that the server never replays (it
+replays only an approval that is really waiting), so it passed with the guard deleted; the mutation check surfaced it.
+The fix was to create a real pending approval, assert that the page got it back on reconnect, and only then assert it
+made no sound.
+
+Measure what you would otherwise eyeball. A screenshot of a mascot standing on a permission prompt looked right and was
+12 px low, because it had measured the prompt mid-slide-in; a test comparing `getBoundingClientRect` against the prompt's
+edge, with a 2 px tolerance, found it, and the same assertion later killed a mutation that a pose-only check could not.
+Layout, position and "does not cover the button" are numbers: assert them. Then still look at the picture, because
+numbers will not tell you the icon is the wrong drawing.
+
+Labels inside assets and data you did not make are claims to check, not facts. A sprite sheet's layer names paired each
+12 px icon with the 17 px icon of the same name; side by side, a map was paired with a telescope and a hammer with a gear.
+Pair by something the labels cannot get wrong (position in the grid), check the pairing by content in the build step (here,
+mean colour), and look at a sheet that shows both. Likewise, `String.replace(str, replacementString)` expands `$'`, `$&`
+and `` $` `` inside the replacement: embedding a run's text into an HTML file that way corrupted any shell command
+containing a dollar sign. Use a function replacer whenever the replacement is data.
+
 For a control that stops something reaching something else, give the test an adversary that records
 everything it receives, and assert on the adversary's record as well as on the refusal. A refusal that
 still delivers the input passes the first check alone.

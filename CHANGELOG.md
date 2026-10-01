@@ -6,6 +6,12 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Changed
+- **Step 8 carries four more lessons, from agent-loop's redesigned UI.** A test that asserts something did *not*
+  happen passes trivially if the setup never made it possible, so assert the precondition first (a "replayed events are
+  silent" test whose events were never replayed passed with the guard deleted). Measure layout and position instead of
+  eyeballing them (a mascot 12 px off its prompt looked right). Treat labels in assets and data you did not make as claims
+  to check by content (icons paired by name were different drawings). And use a function replacer, not a replacement
+  string, whenever `String.replace` embeds data (`$'` corrupted a saved report). Details in `references/roadmap.md`.
 - **Step 8 carries one more lesson, from agent-loop's lineage view.** When you build a view derived from data
   another part of the product already shows, put the two side by side and treat every disagreement as a bug in
   one of them (that is how a "Files changed" panel listing a refused `.env` write was found), and cross-check

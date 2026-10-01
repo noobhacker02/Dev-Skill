@@ -289,3 +289,24 @@ into the skill itself rather than staying a one-off local tweak.
 - Pulled into `SKILL.md`: Step 8 now says to put a derived view beside the data it derives from, treat every
   disagreement as a bug, and cross-check totals against independent counts of the raw data.
 
+### agent-loop: a redesigned UI with a cat, a dinosaur and sound (2026-10-01)
+
+- **A negative test passes if the thing never happens.** "Replayed history makes no sound" emitted approval events the
+  server never replays (it replays only an approval that is really waiting), and passed with the guard deleted. The
+  mutation matrix surfaced it: 14 of 17 deliberate breaks were caught at first, and the three survivors were exactly the
+  places where a precondition was missing or an assertion was too loose (a position checked only by which anchor was
+  chosen, a nap checked by one of two code paths, the replay above). All 17 are caught now.
+- **Measure what you would otherwise eyeball.** A mascot standing on a permission prompt looked right in a screenshot and
+  was 12 px low: it had measured the prompt while it was still sliding in. An assertion on `getBoundingClientRect` with a
+  2 px tolerance found it. A game's first jump was silently cancelled on the takeoff frame (height exactly 0 read as
+  "landed"); a test that pressed Space and read the height found it. Look at the picture too: numbers cannot tell you an
+  icon is the wrong drawing.
+- **Labels in assets you did not make are claims.** Icon pairs matched by layer name paired a map with a telescope and a
+  hammer with a gear. Pair by position, assert the pairing by content (mean colour) in the build step, and look at a sheet
+  showing both.
+- **Reading code for one feature found a bug in another.** `String.replace(str, replacementString)` expands `$'`, `$&`
+  and `` $` ``; the saved-report writer embedded a run's text that way, so any shell command containing a dollar sign
+  corrupted the whole report. Reproduced, fixed with a function replacer, regression test with all four patterns.
+- **Say what is not known.** The cat and cursor sheets carry no artist or licence; the dinosaur and icon terms were not
+  checked. The docs say so before they say anything about the art, and everything depending on it is optional and tested
+  to fail soft.
