@@ -6,6 +6,15 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Changed
+- **`SKILL.md` is shorter: 398 lines to 279.** Step 8 had grown a long paragraph for every lesson learned (about 4,800 words in the file),
+  which is the bloat an earlier stress report warned about, on a skill whose own A/B showed no quality gain. The long form of each lesson
+  (what went wrong, in which real project, how it was found) moved word for word into `references/verification-lessons.md`; Step 8 now
+  has a 17-rule, one-line-each checklist that points there. Nothing was dropped.
+- **Step 8 carries four more lessons, from stress-testing agent-loop and asking whether it was useful.** Measure what a thing costs
+  (a CPU reading found a paint-bound animation costing 4.2% of a core while a prompt waited, which 36 passing suites could not); run N
+  copies at once against whatever they share, then break the shared thing on purpose; a bounded buffer must say when it has dropped
+  something; and answer "is it useful?" against the simplest baseline, with the measured price of every delight feature, while checking
+  each number in the docs against the code. Details in `references/roadmap.md`.
 - **Step 8 carries three more lessons, from auditing agent-loop against three reference projects.** Ask how any long-running tool
   stops, then send the signal and look (agent-loop's Ctrl-C left the run "running" forever; reproduce on the previous commit before
   fixing). A guard nothing exercises is a guard you do not have: mutation survivors point at the layer beneath the UI, so call it

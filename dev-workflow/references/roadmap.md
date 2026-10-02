@@ -331,3 +331,17 @@ Things found only by running something, each with a test now:
 Opt-in tests that cost cents belong next to the free ones: the real model writing the lines for a command, and the real SDK
 being aborted mid-run, because each was an assumption the stand-in had made for the test.
 
+### agent-loop: the stress round, and the question "is it useful or BS?" (2026-10-02)
+
+Stressing found four more things that 36 passing suites had hidden, each fixed with a test that fails without the fix: a database lock
+that crashed five simultaneous runs mid-finish; a waiting prompt that cost 4.2% of a core (15x the floor) through a paint-bound
+animation; a long run's page and report that silently showed only the tail; and runs killed mid-flight that stay "running" forever
+and read as possibly alive. Method that worked: spawn several real processes against one shared file; take a CPU reading and remove
+animations one by one; send 200 stop messages from three tabs plus a signal at the same instant; generate a 636,000-event history and
+time it; break the database on purpose.
+
+The usefulness verdict (docs/IS-IT-USEFUL.md in agent-loop) is the part worth copying: a table of feature, problem it solves, evidence,
+measured price, verdict; the baseline comparison that stings (the five-agent pipeline tied a single session at 17x the cost on the one
+task measured); and the unrun experiment with its price. A feature with no evidence that it helps is labelled "delight" or "unproven",
+not defended.
+
