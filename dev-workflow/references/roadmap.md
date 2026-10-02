@@ -310,3 +310,24 @@ into the skill itself rather than staying a one-off local tweak.
 - **Say what is not known.** The cat and cursor sheets carry no artist or licence; the dinosaur and icon terms were not
   checked. The docs say so before they say anything about the art, and everything depending on it is optional and tested
   to fail soft.
+
+### agent-loop: auditing three reference projects, and what running things found (2026-10-01)
+
+The ask was to go back through the ideas taken from three public projects and check which were really built. The useful
+method was a table (idea, where in the code, which test fails without it) filled in by grepping the code and the test names, not
+from memory; the rows that had no test, or no code, were the findings. One idea (telling "no display", "locked screen" and
+"driver unhealthy" apart) had been admired in a research note and never built: the failures all surfaced as one generic message.
+
+Things found only by running something, each with a test now:
+- No stop path (above). Reproduced on the previous commit: process killed by the signal, run left "running", no report.
+- Opening a long run took 29.6 s (6,000 events) because the page redrew after every replayed event; 2.2 s once it drew once.
+- A bounded event history dropped the *oldest* events, which in a long run are the ones that say what the run is.
+- A report command crashed on one corrupt row in the log; a test that planted one found it in the first minute.
+- A mutation matrix over the new "one switch turns every cartoon off" code: 24 of 29 broken versions caught. The five that
+  survived were guards beneath the UI (tested directly now) and a spinner check with no spinner on screen (it found a real
+  bug: the dock drew the glyph separately).
+- A notification test that passed because the stub never loaded into the page, and the real browser said "denied" by itself.
+
+Opt-in tests that cost cents belong next to the free ones: the real model writing the lines for a command, and the real SDK
+being aborted mid-run, because each was an assumption the stand-in had made for the test.
+

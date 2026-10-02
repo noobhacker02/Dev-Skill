@@ -6,7 +6,13 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Changed
-- **Step 8 carries four more lessons, from agent-loop's redesigned UI.** A test that asserts something did *not*
+- **Step 8 carries three more lessons, from auditing agent-loop against three reference projects.** Ask how any long-running tool
+  stops, then send the signal and look (agent-loop's Ctrl-C left the run "running" forever; reproduce on the previous commit before
+  fixing). A guard nothing exercises is a guard you do not have: mutation survivors point at the layer beneath the UI, so call it
+  directly, give every "it holds still" check a control proving there was something to sample, and assert that an injected stand-in
+  actually answered. And compare timestamps across machines only after simulating the clocks disagreeing. Details in
+  `references/roadmap.md`.
+- **Step 8 carries four more lessons, from agent-loop\'s redesigned UI.** A test that asserts something did *not*
   happen passes trivially if the setup never made it possible, so assert the precondition first (a "replayed events are
   silent" test whose events were never replayed passed with the guard deleted). Measure layout and position instead of
   eyeballing them (a mascot 12 px off its prompt looked right). Treat labels in assets and data you did not make as claims

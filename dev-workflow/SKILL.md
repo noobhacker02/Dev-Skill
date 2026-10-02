@@ -298,6 +298,26 @@ Fail-closed behaviour of something you depend on is a claim like any other. Chec
 trigger it (no window manager, so the driver can't focus anything), and make the normal tests wait for the
 dependency to be ready rather than racing it: a correct refusal during startup looks exactly like a flaky test.
 
+Ask of any long-running tool: how does it stop? Then send the signal and look. agent-loop had no stop path at all: Ctrl-C
+killed the process, the audit database kept saying the run was "running" for good, no report was written, and a model call
+aborted while an approval waited left that approval open for the next tab. Nobody had tried it, because a test run always
+ends by itself. Reproduce the bug on the previous commit (a throwaway worktree is enough) before fixing it, so the claim in
+the changelog is measured; test the fix with a real signal against a real process, and, if the model was stood in for,
+once with the real one (the stand-in only proves what you wrote it to prove).
+
+A guard nothing exercises is a guard you do not have. When a feature has a layer underneath the one a person sees (the
+script refuses what the button already hides), a mutation check will show that deleting the lower layer fails no test,
+because every test goes through the upper one. Call the lower layer directly. Likewise a check that samples something
+(a spinner holding still, a label not appearing) must first prove there is something to sample, with a control that shows
+it changing when the feature is on; otherwise it samples an empty page and passes. And when a test injects a stand-in into
+a browser, assert that the stand-in answered: a function passed to an init script loses its closure, the stub silently
+never loaded, and the real browser's own answer made the test pass for the wrong reason.
+
+Compare a timestamp from one machine with the clock of another only after you have simulated them disagreeing. A page that
+measured "how long has this been running" by subtracting a server's event time from its own clock would show false alarms to
+anyone viewing through a forwarded port or from a phone. Estimate the difference from live events (the smallest
+"now minus stamp" seen) and test it with the page's clock seven minutes ahead and seven behind.
+
 ## Model & effort: don't spend the same tier everywhere
 
 Steps 1–4 (Plan) are where a wrong call is most expensive and cheapest to prevent — use the
