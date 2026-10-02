@@ -121,6 +121,8 @@ Add an entry under `Unreleased` in the repo's root `CHANGELOG.md` (create it fro
 files again at the end of the loop if scope shifted during implementation; the spec and changelog
 should describe what actually got built, not just what was planned.
 
+If you will run this as several agents, add the **Team** section now (who, why, which slice; `references/team-composition.md`).
+
 ## Step 4 — Research before implementing
 
 Before writing code, spend a short, bounded pass checking that the planned approach actually holds
@@ -215,7 +217,8 @@ matching paragraph when your work touches that area.
 14. **Measure what it costs** (CPU while idle, size, memory, time); passing tests will not show it.
 15. **Run N copies at once against whatever they share, then break the shared thing on purpose.**
 16. **A bounded buffer must say when it dropped something**, with an exact count; keep related items together and never trim what someone is
-    still being asked about.
+    still being asked about, and decide what goes by how informative it is, not how old (an oldest-first buffer threw away a message repeated 100
+    times to keep 200 one-offs).
 17. **"Is it useful?" is answered against the simplest baseline**, with the measured price of every delight feature, and every number in the docs
     checked against the code.
 18. **"The suite passes" is a claim about the commit you ran it on.** After the last edit, including a "small" one that adds a field to an
@@ -225,6 +228,17 @@ matching paragraph when your work touches that area.
     code that "only uses cross-platform APIs": a route 404, a printed link that was not a URL, a flag that wants a URL and got a path.
 20. **A scripted recording scripts every timestamp**, including the ones the system stamps itself; one real-clock event made a video's header
     read "1309m 48s". Watch the whole recording, or a frame every few seconds, before it goes in the README.
+21. **Run a new test twice in a row, and its mutant once.** A test that writes to a fixed global path passed on the first run, and a
+    deliberately broken mutant left a file there that made the next run of the *real* code fail. Use unique paths, clean up, and run it twice.
+22. **For anything sizeable, run an adversary round with a new agent** in a fresh context that gets the spec and interfaces but not your
+    reasoning, must give a reproduction for every finding, and is replaced by another new agent next round until a round finds nothing above
+    low. Fix each finding test-first, log why and how, record findings per round (`references/improvement-loop.md`).
+23. **A boundary enforced on the first request is not a boundary on a chain.** A route handler saw only the first URL, so a server-side redirect
+    from an allowed page reached a forbidden host, and the docs called that boundary "already tested". Test with a decoy that records what reaches
+    it, through redirects, popups, tunnels and the tool's own background traffic, and judge paths as the operating system resolves them (a symlink,
+    `link/..`), never as text.
+24. **A baseline is measured, not remembered.** One baseline point was earned by accident (the scorer matched the URL the tool always prints).
+    Score the *old* code with the corrected scorer, record that, and make a changed baseline need a logged reason.
 
 ## Model & effort: don't spend the same tier everywhere
 
@@ -237,6 +251,16 @@ shares the executor's context inherits its blind spots along with its reasoning.
 `references/model-effort-tiers.md` for the full reasoning, the circuit-breaker for when execution
 hits an ambiguity the spec didn't resolve, and how to apply this whether the loop runs as separate
 subagent calls per phase or as one continuous session.
+
+## Team size follows the task
+
+The loop names roles, not a headcount. If you orchestrate subagents, size the team to the task and write it in `SPEC.md` (a short **Team**
+section: each member, why it is there, the slice it owns). Floor that is never cut for anything that writes or acts: a builder, then a verifier
+that is a *different* agent in a *fresh* context, then a final gate. Add a role only for a named risk; add a security or migration reviewer when
+the signals say so (auth, secrets, input parsing, shell/SQL, dependencies, schema); run steps one at a time; give parallel writers disjoint
+paths or do not run them in parallel; agents never hire agents; more than four mid-run additions means re-plan. A one-file fix is three
+agents, a typical feature five, several independent modules up to twelve; the numbers are guides, not targets. Details, the role table and the
+failure list are in `references/team-composition.md`.
 
 ## Step 9 — Status report + checkpoint
 
@@ -261,6 +285,10 @@ iterate further, or push? Loop back to Step 3 for another pass on the same feedb
 `git push` (the installed pre-push hook is the last line of defense) once they say go — either way,
 log which one they picked in `DECISIONS.md` if this project is tracking one.
 
+If the work will outlive one context window, keep `docs/HANDOFF.md` current (`references/handoff-template.md`): requests in the user's own
+words, decisions, where things are, next step, what is verified and what is not. Update it at every stage end and whenever a requirement is
+added. Log each improvement with its **why and how** and the number it moved (`references/improvement-log.md`, `references/benchmark.md`).
+
 ## Reference files
 
 | File | When to read it |
@@ -275,6 +303,11 @@ log which one they picked in `DECISIONS.md` if this project is tracking one.
 | `references/model-effort-tiers.md` | Deciding which model/effort tier to use for a given phase, especially when orchestrating the loop as separate subagent calls |
 | `references/verification-lessons.md` | The long form of each Step 8 rule: what went wrong, in which real project, how it was found |
 | `references/roadmap.md` | Known limitations, deferred ideas, and notes from using this skill across other projects |
+| `references/team-composition.md` | Sizing the team of agents to the task: roles, floor, mandatory reviewers, caps, how to change it mid-run |
+| `references/improvement-loop.md` | The adversary (fresh agent each round), learning loop, benchmark, improvement log and handoff as one loop |
+| `references/handoff-template.md` | Creating `docs/HANDOFF.md` so no context is lost to compaction |
+| `references/improvement-log.md` | This skill's own log of each improvement: why, how, what it moved |
+| `references/benchmark.md` | The skill's standing benchmark table and how to run it |
 
 ## Bundled scripts
 
@@ -283,3 +316,4 @@ log which one they picked in `DECISIONS.md` if this project is tracking one.
 | `scripts/install-hooks.sh` | One-time per-repo: installs the tracked git hooks (Step 0) |
 | `scripts/check_staged.py` | The actual secret/`.env`/destructive-command scanner; called both by the hooks and directly in Step 6 |
 | `scripts/hooks/pre-commit`, `scripts/hooks/pre-push` | Thin wrappers `install-hooks.sh` copies into `.githooks/`; not meant to be run directly |
+| `scripts/handoff_hook.py` | Optional Claude Code hook (PreCompact warns, PostCompact saves the summary, SessionStart re-injects the handoff); opt-in per project |

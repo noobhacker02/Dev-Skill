@@ -72,3 +72,9 @@ finer.
 - [Best AI Model for Coding Agents in 2026: A Routing Guide](https://www.augmentcode.com/guides/ai-model-routing-guide) — three-tier Claude routing (frontier for coordination, mid-tier for implementation, fast model for bulk file operations) measured at roughly half the cost of uniform frontier-model deployment.
 - [An Empirical Study on Strong-Weak Model Collaboration for Repo-level Code Generation](https://arxiv.org/pdf/2505.20182) — strong-to-weak plan injection consistently improves weak-model execution success; the gain comes from the plan's structured content, not from extra compute at execution time.
 - [What Is the Verifier Pattern in Multi-Agent Systems?](https://www.mindstudio.ai/blog/verifier-pattern-multi-agent-systems-independent-review) — a verifier sharing the generator's context produces self-confirmation, not independent review; effective verification needs the requirements and the output, not the generator's reasoning chain.
+
+## How many agents is a separate question
+
+This file says which model and effort each phase gets. How many agents there are, and which roles, depends on the task: see
+`team-composition.md` (a one-file fix is three agents, several independent modules up to twelve, and the floor of builder, independent
+verifier and final gate is never cut).

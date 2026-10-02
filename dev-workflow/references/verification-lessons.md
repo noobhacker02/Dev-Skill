@@ -181,3 +181,53 @@ request) was stamped by the server's real clock while everything else came from 
 clock from the live events it sees. The recorder now scripts that event too, and the server takes a clock option for exactly this. It was
 found by looking at a contact sheet of the finished video, not by any test: look at the thing a person will look at.
 
+## 21. Run a new test twice in a row, and its mutant once
+
+**What happened (agent-loop's companion work, 2026-10-02).** A test for a compaction hook checked that a configured save directory outside the
+project was refused, using a fixed path under `/tmp`. It passed. Then the test harness ran a deliberately broken copy of the hook (the
+project-boundary guard removed) to prove the test could notice, and that copy did exactly what the guard exists to stop: it wrote into the fixed
+path. The next run of the real hook failed its own check because the directory was no longer empty. A benchmark that wraps the test recorded a
+first baseline of 0 of 1 for the wrong reason.
+
+**How it was found.** The test passed when run by hand and failed when run by the benchmark a minute later; running it twice in a row
+reproduced it.
+
+**The rule.** Give every path a test touches a unique name, clean up after it, and run a new test twice in a row before trusting it. A mutant
+that is supposed to misbehave must not be able to leave state that a later honest run can see.
+
+## 22. For anything sizeable, run an adversary round with a new agent
+
+**Why.** An adversary that is the same session as the builder shares its blind spots; one that is given the builder's summary inherits its
+assumptions. The point of a round is a mind that has not seen your reasoning, given only the spec, the threat model and the interfaces, who must
+**prove** each finding with a reproduction.
+
+**How to run it.** See `improvement-loop.md`: a new agent every round, titles of earlier findings from round two, findings with a command or a
+step-by-step scenario or marked unconfirmed, each confirmed finding fixed test-first with a log entry, stop when a round finds nothing above
+low or the round budget is spent, findings per round recorded.
+
+## 23. A boundary enforced on the first request is not a boundary on a chain
+
+**What happened (agent-loop, adversary round 1, finding A2, critical).** The browser's "localhost only" boundary was a Playwright route handler, which is
+called once, for the first URL of a request. A server-side redirect is followed inside the browser, so the handler never saw the next hop. A fresh-context
+agent reproduced it: a decoy server on an off-list address received `/exfil?data=secret` through one 301, while a direct request to the same host was refused.
+The project's own docs said the boundary was "already built and tested". The fix was a layer underneath: a local proxy the browser must use, so every hop is a new
+request that arrives at a place that can refuse it; it also exposed that this Chromium contacts google.com by itself at start-up.
+
+The same round found the file tools judging paths as text: a symlink inside the project directory pointing at the login profile was read straight through, and
+`link/..` was judged by its text while the operating system resolves it through the link. (An early version of the new test used `path.join` to build that input,
+which collapses the `..` as text and so tested nothing. A dangling symlink was a second hole: writing through it creates the file at its target.)
+
+**The rule.** For any boundary, test with a decoy that records what reaches it, and try the chain: redirects (all five status codes, a chain, a meta refresh, a
+`Refresh` header), subresources, frames, popups, tunnels, sockets, and the tool's own background requests. For paths, build the attack on a real disk with real links
+and judge the path as the operating system resolves it. Do not trust "the layer I added covers it": make the test fail on the old code first.
+
+## 24. A baseline is measured, not remembered
+
+**What happened.** The first observability baseline was 2 of 8 (one point was the word "blank" matching the page's own URL), corrected to 1 of 8, and an adversary round
+then showed the last point was the redirect probe matching the landing URL that every `inspect` prints. The true baseline was 0 of 8, found by building the old commit in
+a scratch worktree and scoring it with the corrected scorer. Separately, a hand-edited baseline made the table show a gain that never happened, one corrupt file made the
+runner silently re-record every baseline, and the freshness checks passed when the commit they named was missing from the clone.
+
+**The rule.** Score the old code with the corrected scorer, in a worktree. Make a baseline change need a logged reason checked against git history, make a corrupt
+baseline stop the runner, compare pass rates when the number of checks changes, and make a freshness check fail closed where it matters (CI) when it cannot measure.
+

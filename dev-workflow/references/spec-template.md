@@ -19,6 +19,13 @@ than intended.
 The stack in use (or chosen, if this is a new project) and why, if it wasn't already fixed by the
 existing codebase.
 
+## Team (only when the work runs as several agents)
+
+Skip this for a single session. Otherwise list each member and why it is there (see `team-composition.md`): the role, the slice it owns and
+the paths it may write, who checks it (a different agent in a fresh context), and the signal that put it on the team (for example "touches
+session validation, so a security review is mandatory"). Say what would make you change the team mid-run. Floor for anything that writes or
+acts: builder, then an independent verifier, then a final gate.
+
 ## Requirements
 
 The concrete, checkable things the implementation must do. Prefer a numbered list over prose —

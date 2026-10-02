@@ -5,6 +5,20 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+- **Four new references, a team-size section, a handoff template and hook, an improvement log and a benchmark, from a long session of building and adversarially testing agent-loop.**
+  `references/team-composition.md` (the number of agents depends on the task: principles, role table mapped to Claude Code subagents, a sizing table from 1 to 12, a
+  floor that is never cut, mandatory reviewers by signal, caps, mid-run changes, failure modes), `references/improvement-loop.md` (a new adversary agent every round, the
+  learning loop, the log, the benchmark, the handoff), `references/handoff-template.md` plus `scripts/handoff_hook.py` (PreCompact warns, PostCompact saves the summary
+  with secrets redacted, SessionStart re-injects the handoff; SessionStart was seen firing live, the other two are tested only with the SDK's documented payloads),
+  `references/improvement-log.md` (seven entries, each with why, how, the number it moved and the cost) and `references/benchmark.md` with `tests/bench_skill.py`.
+  SKILL.md gained a "Team size follows the task" section, a Step 3 line, a Step 9 paragraph and Step 8 rules 21 to 24; it went from 285 to 319 lines, which the
+  benchmark shows as worse and the log explains. Tests: `tests/handoff_hook_test.py` (2 mutants caught), `tests/improvement_log_test.py` (5 controls),
+  `tests/bench_skill_test.py`.
+- **Step 8 rules 23 and 24 and a decision about eviction** come from adversary round 1 on agent-loop: a boundary enforced on the first request is not a boundary on a
+  chain (a server-side redirect reached a forbidden host while the docs said the boundary was tested); a baseline is measured by scoring the old code with the corrected
+  scorer; and a bounded buffer decides what to drop by how informative it is, not how old.
+
 ### Changed
 - **Step 8 carries three more lessons, from running agent-loop on macOS and Windows for the first time and remaking its README media.**
   "The suite passes" is a claim about the commit you ran it on (a server field was added, the full suite was not re-run, and a test

@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "PreCompact": [
+      { "hooks": [ { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/dev-workflow/scripts/handoff_hook.py\"" } ] }
+    ],
+    "PostCompact": [
+      { "hooks": [ { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/dev-workflow/scripts/handoff_hook.py\"" } ] }
+    ],
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/dev-workflow/scripts/handoff_hook.py\"" } ] }
+    ]
+  }
+}
