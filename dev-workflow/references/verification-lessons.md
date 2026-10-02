@@ -107,7 +107,10 @@ still delivers the input passes the first check alone.
 
 A timeout on a call with side effects is not a failure, it's an unknown: the call can complete later, after
 every check you made has stopped meaning anything. Treat a timed-out action as "may have happened" and stop
-sending, rather than reporting an error and carrying on. A timeout on a read is just an error.
+sending, rather than reporting an error and carrying on. A timeout on a read is just an error. A timeout in a *probe* is an unknown, never "absent": a doctor command ran `which`/`where` with a 3-second limit and read a timeout as "not
+installed", so a loaded Windows runner made it say node was missing (7 of 20 lookups with a 1 ms limit gave the same false answer here). Search
+PATH directly, or report "could not tell"; and test it with a PATH that holds only the thing you are looking for, where a subprocess-based probe
+cannot even start.
 
 Fail-closed behaviour of something you depend on is a claim like any other. Check it in an environment built to
 trigger it (no window manager, so the driver can't focus anything), and make the normal tests wait for the
