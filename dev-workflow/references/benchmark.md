@@ -22,14 +22,14 @@ python3 tests/bench_skill.py --write-doc  # regenerate the table below
 <!-- bench:table:start -->
 | Suite | What it measures | First recorded | Now | Change | Why / how |
 |---|---|---|---|---|---|
-| `skill-lines` | Length of SKILL.md (lines); shorter is better because long skills get skimmed | 285 @ 4f96ec9 | 319 | +34 (worse) | SKILL-002, SKILL-005, SKILL-007 |
-| `skill-words` | Length of SKILL.md (words) | 3318 @ 4f96ec9 | 3921 | +603 (worse) | - |
+| `skill-lines` | Length of SKILL.md (lines); shorter is better because long skills get skimmed | 285 @ 4f96ec9 | 319 | +34 (worse) | SKILL-002, SKILL-005, SKILL-007, SKILL-008 |
+| `skill-words` | Length of SKILL.md (words) | 3318 @ 4f96ec9 | 3946 | +628 (worse) | - |
 | `step8-rules` | One-line verification rules in Step 8 | 20 @ 4f96ec9 | 24 | +4 | - |
 | `references` | Reference files shipped with the skill | 10 @ 4f96ec9 | 15 | +5 | - |
 | `hook-tests` | Compaction-hook behaviours verified, including 2 mutants caught | 1/1 @ 4f96ec9 | 1/1 | no change | SKILL-004 |
 | `scanner-stress` | Staged-file scanner: cases behaving correctly (secrets, destructive commands, encodings, allowlist abuse) | 67/68 @ 4f96ec9 | 67/68 | no change | SKILL-001 |
 | `scanner-stress2` | Scanner: hook, push, CI and performance cases behaving correctly | 6/8 @ 4f96ec9 | 6/8 | no change | SKILL-001 |
-Latest run: commit `4f96ec9`, 2026-10-02. Baselines are the first value recorded for a suite and are not overwritten without a log entry.
+Latest run: commit `4855163`, 2026-10-02. Baselines are the first value recorded for a suite and are not overwritten without a log entry.
 <!-- bench:table:end -->
 
 ## Definition changes

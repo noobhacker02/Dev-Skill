@@ -60,10 +60,17 @@ A standing table of numbers with a **recorded baseline** that is never silently 
 test so a hand-typed claim cannot drift. The scorer must have its own control (feed it silence; it must say "not reported"), and a change to
 what a suite counts is logged with the reason. State what the numbers do not show. See `references/benchmark.md`.
 
-## 6. The handoff, before context is lost
+## 6. The handoff, before context is lost, and saving before usage runs out
 
 If the work will outlive one context window (it almost always does), keep `docs/HANDOFF.md` current from `references/handoff-template.md`:
 the standing instructions, the requests *in the user's words*, decisions, where everything is, status, the next step, what is verified and what
 is not, the improvement backlog, gotchas, how to resume. Update it at the end of every stage and whenever the user adds a requirement. Optional
 hooks (`scripts/handoff_hook.py`) save each compaction summary to disk and re-inject the handoff when a session starts; they are opt-in per
 project and they can warn but not block.
+
+**Usage nearly out is the same problem as compaction, faster.** When a limit is close, save before you move ahead: commit and push every repo involved (a one-command script is
+worth having; agent-loop has `npm run checkpoint`), bring the handoff's "Next step" and "verified / not verified" up to date, and make sure anything in the background (a
+test run, a sub-agent) writes to disk as it goes, because a sub-agent that dies of the limit leaves nothing otherwise. Say in the commit message what was not re-run; a
+checkpoint is not a claim of green. Keep a catalog of recoveries and of mistakes made more than once (`agent-loop/docs/SELF-HEALING.md` is an example) and add a row the second
+time anything fails.
+

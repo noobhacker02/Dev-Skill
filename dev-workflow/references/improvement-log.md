@@ -127,3 +127,15 @@ Template:
 - **Skill impact:** Step 8 rules 16, 23, 24; `references/verification-lessons.md` sections 23 and 24.
 - **Follow-ups:** trim Step 8 by merging rules that overlap (7, 8 and 12 all concern controls); consider a "boundaries" checklist reference if a third boundary bug appears.
 
+## SKILL-008 · 2026-10-02 · Save before usage runs out, and keep a catalog of recoveries (user request)
+- **Problem:** limits were hit or neared several times; a sub-agent died of one with nothing written, a background run was lost to a restart, and saving two repos by hand costs
+  steps at the wrong moment. The skill said nothing about any of this.
+- **Why it matters:** unsaved work is redone work, and the user asked twice that it not be.
+- **Change (how):** Step 9 gained one sentence (save everything first, then continue); `references/improvement-loop.md` section 6 now covers usage and the catalog of recoveries and
+  repeated mistakes; the project carries a one-command checkpoint script and `CLAUDE.md` rules (agent-loop IMP-012).
+- **Measured:** SKILL.md +1 line (319 to 320); the checkpoint script has 6 checks with controls (agent-loop `test/checkpoint.mjs`). Not measurable: whether the rule is followed under pressure.
+- **Cost / trade-off:** one more sentence to read in Step 9; a checkpoint commit may hold unfinished work (its message says so).
+- **Suites:** skill-lines
+- **Skill impact:** Step 9; `references/improvement-loop.md` section 6.
+- **Follow-ups:** none until a limit event shows the rule failing.
+

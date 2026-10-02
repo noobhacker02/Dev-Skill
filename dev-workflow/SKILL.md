@@ -287,7 +287,7 @@ log which one they picked in `DECISIONS.md` if this project is tracking one.
 
 If the work will outlive one context window, keep `docs/HANDOFF.md` current (`references/handoff-template.md`): requests in the user's own
 words, decisions, where things are, next step, what is verified and what is not. Update it at every stage end and whenever a requirement is
-added. Log each improvement with its **why and how** and the number it moved (`references/improvement-log.md`, `references/benchmark.md`).
+added. **When usage is nearly out, save everything first** (commit and push every repo involved, handoff current, background work writing to disk) and only then continue. Log each improvement with its **why and how** and the number it moved (`references/improvement-log.md`, `references/benchmark.md`).
 
 ## Reference files
 

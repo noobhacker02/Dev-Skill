@@ -6,6 +6,7 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Added
+- **Save before usage runs out**: Step 9 now says to save everything first (commit and push every repo, handoff current, background work writing to disk), `references/improvement-loop.md` section 6 covers it with a catalog of recoveries and repeated mistakes, and `CLAUDE.md` carries the rule (SKILL-008).
 - **Four new references, a team-size section, a handoff template and hook, an improvement log and a benchmark, from a long session of building and adversarially testing agent-loop.**
   `references/team-composition.md` (the number of agents depends on the task: principles, role table mapped to Claude Code subagents, a sizing table from 1 to 12, a
   floor that is never cut, mandatory reviewers by signal, caps, mid-run changes, failure modes), `references/improvement-loop.md` (a new adversary agent every round, the
