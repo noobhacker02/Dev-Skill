@@ -6,6 +6,12 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Changed
+- **Step 8 carries three more lessons, from running agent-loop on macOS and Windows for the first time and remaking its README media.**
+  "The suite passes" is a claim about the commit you ran it on (a server field was added, the full suite was not re-run, and a test
+  that depended on the old behaviour went red on all three systems), and a green badge can lie when the job is allowed to fail;
+  "portable" means it ran on the other systems and on a newer browser than yours (a route 404, a printed link that was not a URL, a flag
+  that wants a URL and got a path); and a scripted recording scripts every timestamp, including the ones the system stamps itself (a
+  video's header read "1309m 48s"). Long form in `references/verification-lessons.md`; `SKILL.md` is 285 lines.
 - **`SKILL.md` is shorter: 398 lines to 279.** Step 8 had grown a long paragraph for every lesson learned (about 4,800 words in the file),
   which is the bloat an earlier stress report warned about, on a skill whose own A/B showed no quality gain. The long form of each lesson
   (what went wrong, in which real project, how it was found) moved word for word into `references/verification-lessons.md`; Step 8 now

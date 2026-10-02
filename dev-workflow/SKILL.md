@@ -218,6 +218,13 @@ matching paragraph when your work touches that area.
     still being asked about.
 17. **"Is it useful?" is answered against the simplest baseline**, with the measured price of every delight feature, and every number in the docs
     checked against the code.
+18. **"The suite passes" is a claim about the commit you ran it on.** After the last edit, including a "small" one that adds a field to an
+    existing message, run the whole suite again before saying so, then read CI. **A green badge can lie**: a job allowed to fail reports
+    success while suites inside it fail, so read the job's own list.
+19. **"Portable" means it ran on the other systems**, and on a newer browser than yours. A first run on Windows and macOS found real bugs in
+    code that "only uses cross-platform APIs": a route 404, a printed link that was not a URL, a flag that wants a URL and got a path.
+20. **A scripted recording scripts every timestamp**, including the ones the system stamps itself; one real-clock event made a video's header
+    read "1309m 48s". Watch the whole recording, or a frame every few seconds, before it goes in the README.
 
 ## Model & effort: don't spend the same tier everywhere
 

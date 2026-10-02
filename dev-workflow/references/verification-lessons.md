@@ -153,3 +153,28 @@ alternative (one plain session) scored 4,037 of 4,040 for $0.08 against the pipe
 feature into "earns its place / small / delight / unproven" with the measured price of the delight, and names the experiment that would
 settle it. While writing it, check every number against the code: two docs disagreed with themselves (13 and 16 prompts; 26 and 37 suites)
 and one true claim was incomplete (50 KB of images travel as 71 KB in every report).
+
+"The suite passes" is a claim about one commit. After adding a server timestamp to an existing message, the full suite was reported green;
+it had not been re-run since that change, and a test that stamped events with a clock 7 minutes off while the test server truthfully
+reported its own went red on Linux, macOS and Windows at once. The test was inconsistent, not the product (a real server stamps events and
+reports its time from one clock); the fix gave the test server the same skewed clock, and the check that the page's skew handling really
+is what makes it pass was re-run with that handling broken. Run everything after the last edit, then read CI, and read each failing job's
+own output: the cross-platform job was allowed to fail so that it could report a table, which meant the run showed "success" while two or
+three suites in it were red.
+
+Porting is testing. The first run on macOS and Windows (listed in the docs as "untested") found a server that answered 404 to its own page's
+scripts on Windows (`normalize("/persona.js")` is `\persona.js` there), a command line that printed `file://` plus a Windows path (not a
+URL, not a link), and tests that passed a bare `D:\...` path to `node --import` (read as the scheme `d:`). Two more failures were about
+the newer browser CI installs, not the operating system: the same notification-permission assertion that passed on the sandbox's older
+Chromium said `denied` on Linux CI too. When one failure shows up on every system, suspect the version before the OS.
+
+A test that samples once after a fixed sleep is a race with the machine's load. A dinosaur game's "the picture changes as it runs" compared
+two frames 250 ms apart and failed once on a loaded runner; it could not be reproduced locally (36 intervals, every one different). When
+you cannot reproduce, say so in the commit, make the assertion wait for the condition with a bound, and do not claim a cause you did not
+see.
+
+A scripted recording must script every timestamp. The desktop walkthrough's header read "1309m 48s" because one event (an approval
+request) was stamped by the server's real clock while everything else came from the scripted one, and the page estimates the server's
+clock from the live events it sees. The recorder now scripts that event too, and the server takes a clock option for exactly this. It was
+found by looking at a contact sheet of the finished video, not by any test: look at the thing a person will look at.
+
