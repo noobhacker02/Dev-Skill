@@ -175,3 +175,14 @@ Template:
 - **Suites:** none
 - **Skill impact:** lesson 27.
 - **Follow-ups:** the same matrix for the other places agent-loop prints untrusted text (the lineage and report renderers were checked in round 1; the browser's page-text channel is adversary finding A37).
+
+## SKILL-012 · 2026-10-03 · The scanner's allow marker counts anywhere on the line (found committing agent-loop IMP-015)
+- **Problem:** `check_staged.py` stored each finding's text as `content.strip()[:200]` and checked `devskill:allow` against that cut-down text, so a marker after column 200 was never seen. A long, legitimate regex
+  line that names the destructive words it detects (`drop table`) stayed blocked with the marker on it; the only way through was to rewrite the code around the scanner or use `--no-verify`, which is not allowed.
+- **Why it matters:** a block that cannot be answered by the documented escape hatch trains people to use the undocumented one.
+- **Change (how):** findings keep the whole line; only the printed snippet is cut (with " ..."). `tests/stress/scan_stress2.py` cases: a long destructive line with no marker (still blocked), the same line with the marker after column 200 (allowed), a short line with the marker (allowed). agent-loop's `.githooks/check_staged.py` copy updated to match.
+- **Measured:** `tests/stress/scan_stress2.py` 8 of 11 cases correct on the old scanner (the long-line case blocked) and 9 of 11 on the new one; its other cases are unchanged (it still reports its two documented holes, the `.githooks` self-replacement and `--no-verify`, which this change does not touch).
+- **Cost / trade-off:** a finding now carries a whole line in memory (a 5 MB single-line file measured 5.7 s before and after); the printed snippet is unchanged.
+- **Suites:** none
+- **Skill impact:** the scanner only.
+- **Follow-ups:** the two documented holes; agent-loop keeps a copy of the scanner in `.githooks/`, so every fix here has to be copied there (a drift check would catch a stale copy).

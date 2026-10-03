@@ -5,6 +5,11 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Fixed
+- **The scanner's `devskill:allow` marker now counts anywhere on the line.** `check_staged.py` checked the marker against the first 200 characters of the finding, so a long line with the marker at its end stayed
+  blocked, and the only ways through were rewriting the code around the scanner or `--no-verify`. Findings keep the whole line; only the printed snippet is cut. Three new cases in `tests/stress/scan_stress2.py`
+  (long line without the marker still blocked, with it allowed, short line allowed); the old scanner failed the second (SKILL-012). agent-loop's copy in `.githooks/` is updated to match.
+
 ### Added
 - **Save before usage runs out**: Step 9 now says to save everything first (commit and push every repo, handoff current, background work writing to disk), `references/improvement-loop.md` section 6 covers it with a catalog of recoveries and repeated mistakes, and `CLAUDE.md` carries the rule (SKILL-008).
 - **Four new references, a team-size section, a handoff template and hook, an improvement log and a benchmark, from a long session of building and adversarially testing agent-loop.**

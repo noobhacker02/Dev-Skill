@@ -82,6 +82,15 @@ d = repo(); write(d, ".env", "X=1\n"); sh(f"bash '{INSTALL}'", d)
 rep("HOOK: plain git commit of .env (hook installed)", sh("git add -A && git commit -qm env", d).returncode, True)
 rep("HOOK: git commit --no-verify of .env (no record kept)", sh("git commit -qm env --no-verify", d).returncode, True)
 
+# 9. the allow marker counts wherever it sits on the line, not only in the first 200 characters (agent-loop's team signals hit this: a long regex line with the marker at its end was still blocked)
+pad = "x" * 300
+d = repo(); write(d, "long.py", f"# {pad}\n" + DROP.rstrip("\n") + f"  # {pad}\n"); sh("git add -A", d)
+rep("COMMIT: long line with a destructive statement and no allow marker (control)", scan(d, "--mode=commit")[0], True)
+d = repo(); write(d, "long.py", DROP.rstrip("\n") + f"  # {pad}  # devskill:allow (a long line)\n"); sh("git add -A", d)
+rep("COMMIT: the same line with the allow marker after column 200", scan(d, "--mode=commit")[0], False)
+d = repo(); write(d, "short.py", DROP.rstrip("\n") + "  # devskill:allow (a short line)\n"); sh("git add -A", d)
+rep("COMMIT: the same statement with the allow marker on a short line (control)", scan(d, "--mode=commit")[0], False)
+
 # 8. performance
 d = repo(); write(d, "big.sql", "".join(f"INSERT INTO t VALUES ({i}, 'row {i} padding padding');\n" for i in range(200000))); sh("git add -A", d)
 print(f"PERF | 200k-line staged file: {scan(d, '--mode=commit')[1]}s")
