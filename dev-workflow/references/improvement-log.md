@@ -162,3 +162,16 @@ Template:
 - **Suites:** none
 - **Skill impact:** lesson 26.
 - **Follow-ups:** none until a reader built under this lesson is shown to hide something again.
+
+## SKILL-011 · 2026-10-03 · A filter test names the byte classes and the channels it covers (agent-loop IMP-015)
+- **Problem:** the first "no control bytes reach the terminal" test for the new `team` command fed one class (C0, an escape sequence) into one channel (the text output) and passed. Run against a stricter version it
+  failed twice: C1 control characters (U+0080 to U+009F, which some terminals act on) survived into the plan's `brief`, and a repository file NAME with control bytes reached `--json` through the signals' paths.
+  A mutation of the JSON filter had survived the first test for the same reason.
+- **Why it matters:** "no control byte reaches the terminal" is a claim about every path text can take, and a test that covers the easy path reads as proof for all of them.
+- **Change (how):** `references/verification-lessons.md` lesson 27: list the byte classes (C0, C1, bidi, NUL) and the channels (text, JSON, file names, role or config files, error text) a filter test covers, feed each
+  class through each channel, and filter both at the source and at the edge.
+- **Measured:** not a number for the skill; product side agent-loop IMP-015: both gaps found by strengthening the test before any adversary saw the code, and the mutation of the JSON filter now dies.
+- **Cost / trade-off:** a longer test; a second filter at the edge that is redundant while the source filter holds.
+- **Suites:** none
+- **Skill impact:** lesson 27.
+- **Follow-ups:** the same matrix for the other places agent-loop prints untrusted text (the lineage and report renderers were checked in round 1; the browser's page-text channel is adversary finding A37).

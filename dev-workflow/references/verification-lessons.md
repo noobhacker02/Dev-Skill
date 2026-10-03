@@ -252,3 +252,12 @@ break it, not by reviewing the plan. The fix had a second half: a text field wit
 **The rule.** For any reader, scanner or checker, define the states "could not read this" and "this is hidden from a person" and make them loud (a named block in the result, a refusal to act), so a pass means "read it all and it
 was fine". Test it on a page with every kind of container (frame, shadow root, a frame still loading, one that fails, over the limit) and score the old code first. When page-side code is shared as text, build real functions
 from it: Playwright runs a string as an expression and ignores the argument.
+
+## 27. A filter test names the byte classes and the channels it covers
+
+**What happened.** The first test that no control byte reaches the terminal fed one escape sequence (C0) into the text output and passed. A stricter version found C1 characters (U+0080 to U+009F) inside a plan field and a
+repository file name inside `--json`: two channels and one byte class the first test never touched. A mutation that removed the JSON filter had survived for the same reason.
+
+**The rule.** Write the matrix before the test: byte classes (C0, C1, bidi overrides, NUL) by channels (text output, JSON output, file names, role and config files, error text). NUL cannot be put on a command line, so
+call the function directly for that class. Feed every class through every channel, include a control that the same input without the bad bytes still works, filter at the source and again at the edge, and mutate each
+filter to see the test fail.
