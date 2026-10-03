@@ -150,3 +150,15 @@ Template:
 - **Suites:** none
 - **Skill impact:** lesson 25.
 - **Follow-ups:** none until the lesson is shown to be ignored.
+
+## SKILL-010 · 2026-10-03 · A reader that cannot see part of the thing must say so (agent-loop IMP-014)
+- **Problem:** the page reader listed one field of four on a form with an iframe and a shadow root, and every check planned on top of it (a diff of the form against the facts, a job-id check, a hidden-text check)
+  would have printed "no mismatch": a pass because nothing was inspected. A fresh-context adversary found it by running the reader, not by reading the design. Measuring the fix then showed a second blind spot (a field no
+  person can see was offered as an ordinary one).
+- **Why it matters:** a green check that never looked is worse than no check, and the person reading "no mismatch" cannot tell which kind they have.
+- **Change (how):** `references/verification-lessons.md` lesson 26; the project catalog (agent-loop `docs/SELF-HEALING.md`) lists "form the reader cannot fully read" as a runtime recovery.
+- **Measured:** not measurable as a number for the skill; the product-side evidence is agent-loop IMP-014 (`form-coverage` 1 of 8 to 8 of 8, 17 mutants killed).
+- **Cost / trade-off:** one more lesson; an "unreadable" state to design for in every reader.
+- **Suites:** none
+- **Skill impact:** lesson 26.
+- **Follow-ups:** none until a reader built under this lesson is shown to hide something again.

@@ -242,3 +242,13 @@ was then run without the flags the npm script adds, so it measured the real SDK 
 **The rule.** Write down, in the commit or the test header, what the test assumes about loopback order, path roots and separators, line endings, case sensitivity and timers. Replace a
 fixed pause with a wait for the state itself, and measure from the action, not from the start. Run a suite the way its script does (`npm run test:x`). After a push read CI for **every**
 system, and say which fixes were reproduced locally and which are confirmed only by CI.
+
+## 26. A reader that cannot see part of the thing must say so, or its "nothing wrong" means nothing
+
+**What happened.** A page reader listed one field of four on a form whose other questions sat in an iframe and a shadow root. It reported no error: it simply did not know the rest existed. Every check planned on top of it
+(a diff of the filled form against the facts, a job-id check, a hidden-text check) would have said "no mismatch" for questions it never read. A fresh-context adversary found this by running the reader on a page built to
+break it, not by reviewing the plan. The fix had a second half: a text field with opacity 0 (a bot trap) was offered as an ordinary field, because "visible" had been defined by the DOM, not by a person.
+
+**The rule.** For any reader, scanner or checker, define the states "could not read this" and "this is hidden from a person" and make them loud (a named block in the result, a refusal to act), so a pass means "read it all and it
+was fine". Test it on a page with every kind of container (frame, shadow root, a frame still loading, one that fails, over the limit) and score the old code first. When page-side code is shared as text, build real functions
+from it: Playwright runs a string as an expression and ignores the argument.
