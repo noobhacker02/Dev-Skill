@@ -231,3 +231,14 @@ runner silently re-record every baseline, and the freshness checks passed when t
 **The rule.** Score the old code with the corrected scorer, in a worktree. Make a baseline change need a logged reason checked against git history, make a corrupt
 baseline stop the runner, compare pass rates when the number of checks changes, and make a freshness check fail closed where it matters (CI) when it cannot measure.
 
+
+## 25. Before pushing a test, say what it assumes about the machine
+
+**What happened.** Three systems went red for different reasons, none of which showed on the machine the code was written on: a proxy connected to only the first address a name
+resolved to (CI runners resolve `localhost` to `::1` first, the test server listened on `127.0.0.1`), a path scope treated `/` as a directory (on Windows it is the current drive),
+a generated table was compared with a checkout that had CRLF endings, and two tests paused for a fixed time before an action that needed a particular state. A load experiment
+was then run without the flags the npm script adds, so it measured the real SDK and proved nothing.
+
+**The rule.** Write down, in the commit or the test header, what the test assumes about loopback order, path roots and separators, line endings, case sensitivity and timers. Replace a
+fixed pause with a wait for the state itself, and measure from the action, not from the start. Run a suite the way its script does (`npm run test:x`). After a push read CI for **every**
+system, and say which fixes were reproduced locally and which are confirmed only by CI.

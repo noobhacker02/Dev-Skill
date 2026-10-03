@@ -139,3 +139,14 @@ Template:
 - **Skill impact:** Step 9; `references/improvement-loop.md` section 6.
 - **Follow-ups:** none until a limit event shows the rule failing.
 
+
+## SKILL-009 · 2026-10-03 · A new test names what it assumes about the operating system, and a fixed pause becomes a wait (agent-loop IMP-013)
+- **Problem:** after a long stretch of work on one machine, CI on all three systems was red. Each cause was something a test or a fix had silently assumed: `localhost` resolves to
+  `127.0.0.1` first, `/` is a directory, files have LF endings, a call has started within 500 ms, a transition advances between two reads 120 ms apart.
+- **Why it matters:** the failures were found by the user, not by the suite, and each red run costs a full cycle on three runners.
+- **Change (how):** `references/verification-lessons.md` lesson 25; the project catalog (agent-loop `docs/SELF-HEALING.md`, part C) has the matching rows.
+- **Measured:** not measurable as a number for the skill; the product-side evidence is agent-loop IMP-013 (which fixes were reproduced and which were only confirmed by CI).
+- **Cost / trade-off:** one more lesson to read; a short list to write before a test is pushed.
+- **Suites:** none
+- **Skill impact:** lesson 25.
+- **Follow-ups:** none until the lesson is shown to be ignored.
