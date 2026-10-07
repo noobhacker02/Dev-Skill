@@ -294,3 +294,9 @@ product handed the agent an error it could not act on.
 **The rule.** Wait for a signal from the thing you are waiting for (the page makes a request when its work is over; an event; a file appears), never for a number of seconds. If a test depends on timing at all, run it with four busy loops (`node -e 'while(true){}'` four times) and count
 failures over six runs before calling it stable, and read "passes alone, fails in the full suite" as "load" first. When the failure is one an agent would meet in real use, fix the product as well as the test: ask a read again, say plainly what happened for an action, and do not repeat an action
 that may have happened.
+
+## 31. A mutation check starts with a control, and "0 survivors" on the first pass is a reason to look
+
+**What happened.** A mutation run over a new module said 0 survivors of 30. The test it ran was failing on the unmutated code (a wording assertion that was wrong), so every mutant died of that one failure. Earlier, a copy of the tree that did not contain a directory the test reads had made a test fail in the copy only, and one mutant was counted as killed by it; with the directory in place it survived and exposed a missing assertion.
+
+**The rule.** Before the first mutant, run the unmutated copy through the same tests and stop if it fails. Give the copy every directory the tests read. Read the survivor count together with the control line, and treat a perfect score on the first pass as something to check, not to report. Then, as before, every survivor is a missing assertion, a redundant line (delete it), a redundant layer (a combined mutant shows it), an equivalent mutant (say why), or an unexercised guard (say so).

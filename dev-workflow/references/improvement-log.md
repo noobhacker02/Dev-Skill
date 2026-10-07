@@ -252,3 +252,13 @@ Template:
 - **Suites:** none
 - **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 30).
 - **Follow-ups:** a "run under load" mode for the dev-workflow's own stress tests (none of them waits on a clock today, checked by search).
+
+## SKILL-018 · 2026-10-07 · A mutation check starts with a control: the unmutated copy must pass, or a count of zero survivors means nothing (found in agent-loop IMP-021)
+- **Problem:** a mutation run over a new module reported 0 survivors of 30 on its first pass. The test it ran was failing on the unmutated build (an assertion about wording that was wrong), so every mutant "died" of the same failure. A second slip of the same kind was older: a copy of the tree that lacked a directory the test reads made one test fail in the copy only, and a mutant had been counted as killed by it in an earlier entry; run again with the directory, it survived and showed a missing assertion.
+- **Why it matters:** "all mutants killed" is the number people stop at. A control costs one run and removes the whole class of vacuous results; without it a mutation check can go green for the wrong reason.
+- **Change (how):** `dev-workflow/references/verification-lessons.md` lesson 31 (run the unmutated copy first and stop if it fails; give the copy every directory the tests read; read 0 survivors together with the control line; suspect a result that is too good on the first pass); every mutation script in agent-loop now runs the control.
+- **Measured:** 2 vacuous results found in one session (one before the control existed, one older entry re-checked); after the control, 93 mutants over four modules with 0 survivors and one older survivor recovered, each with a passing control line.
+- **Cost / trade-off:** one extra test run per mutation script.
+- **Suites:** none
+- **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 31).
+- **Follow-ups:** none.

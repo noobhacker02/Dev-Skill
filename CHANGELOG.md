@@ -6,6 +6,7 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Fixed
+- **A lesson from a mutation check that was green for the wrong reason** (SKILL-018, verification lesson 31). A run said 0 survivors of 30 while its test was failing on the unmutated code, so every mutant died of the same failure; an older kill had been vacuous because the copy lacked a directory the test reads. The lesson: run the unmutated copy first and stop if it fails, give the copy every directory the tests read, and treat a perfect first pass as something to check. Documentation only; the scripts in agent-loop now carry the control (IMP-021).
 - **A lesson from a flaky test that was really load** (SKILL-017, verification lesson 30). A test that waited a fixed 2 s for a popup storm passed alone and failed in the full suite; the lesson is to wait on a signal from the thing waited for, and to run any timing-dependent test under four busy loops for six runs before calling it stable. Documentation only; the product fix is agent-loop IMP-019.
 - **This repository's own scanner hook was four findings behind the skill's** (SKILL-016). `.githooks/check_staged.py` still cut each finding at 200 characters before looking for `devskill:allow`; the fix of SKILL-012 had reached the skill and
   agent-loop but not the hook that guards this repository. It is synced, and `tests/scanner_copies_test.py` fails when the copies differ (it failed on the stale one).
