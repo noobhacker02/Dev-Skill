@@ -34,7 +34,13 @@ SECRET_PATTERNS = [
     re.compile(r"AKIA[0-9A-Z]{16}"),
     re.compile(r"xox[baprs]-[A-Za-z0-9-]{10,}"),
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(-----END [A-Z ]*PRIVATE KEY-----|$)"),
-    re.compile(r"(?i)\b(password|passwd|secret|api[_-]?key|token)\b\s*[:=]\s*['\"]?[^\s'\"]{8,}"),
+    # A key name with anything word-like before or after it (GITHUB_TOKEN, access_token, DB_PASSWORD, client_secret, AWS_SECRET_ACCESS_KEY, "password": "x") and its value. A \b in front would not fire
+    # inside GITHUB_TOKEN, because _ is a word character (adversary round 2, A34). The trailing run is bounded so a long word cannot make the match slow.
+    re.compile(r"(?i)(token|secret|passw(or)?d|pwd|api[_-]?key|private[_-]?key|credential|session[_-]?id|jsessionid|li_at)[\w.-]{0,40}[\"']?\s*[:=]\s*[\"']?[^\s\"';,]{6,}"),
+    # A header that carries a credential, the whole value (a Cookie line holds several)
+    re.compile(r"(?im)^[ \t>*-]*((set-)?cookie|(proxy-)?authorization|x-api-key)[ \t]*:[ \t]*\S.*$"),
+    re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}"),
+    re.compile(r"eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{4,}"),
 ]
 
 

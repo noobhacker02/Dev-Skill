@@ -6,11 +6,18 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Fixed
+- **The compaction-summary redactor now catches `GITHUB_TOKEN`, `DB_PASSWORD`, `client_secret`, `access_token`, Cookie and Authorization lines, Bearer values and JWTs** (SKILL-015; agent-loop adversary round 2, A34). The pattern
+  had a word boundary in front of the key name and `_` is a word character, so 8 of 10 ordinary spellings were saved as they were into a file the checkpoint command commits. Thirteen spellings now tested (11 survived on the old
+  script, 0 on the new), four ordinary sentences stay, a speed check, and a third mutant. The three saved summaries are unchanged by it.
 - **The scanner's `devskill:allow` marker now counts anywhere on the line.** `check_staged.py` checked the marker against the first 200 characters of the finding, so a long line with the marker at its end stayed
   blocked, and the only ways through were rewriting the code around the scanner or `--no-verify`. Findings keep the whole line; only the printed snippet is cut. Three new cases in `tests/stress/scan_stress2.py`
   (long line without the marker still blocked, with it allowed, short line allowed); the old scanner failed the second (SKILL-012). agent-loop's copy in `.githooks/` is updated to match.
 
 ### Added
+- **Two more verification lessons from adversary round 2 of agent-loop** (`references/verification-lessons.md` 28 and 29; `references/improvement-log.md` SKILL-013 and SKILL-014). 28: a gate on what a tool is given must judge what the
+  tool will open or run (resolve as the tool does, allow-list safe forms instead of names, treat words the shell rewrites as unjudgeable, keep a table of every form beside the ordinary commands that must still pass). 29: a test for a
+  failure that kills or hangs a process is measured on the old code five or six times and made harsher until it fails every time, runs in a child process, counts a timeout as a failure and removes any detector listener
+  before asserting; an old-build score is taken with a copy of the test inside the scratch worktree.
 - **Save before usage runs out**: Step 9 now says to save everything first (commit and push every repo, handoff current, background work writing to disk), `references/improvement-loop.md` section 6 covers it with a catalog of recoveries and repeated mistakes, and `CLAUDE.md` carries the rule (SKILL-008).
 - **Four new references, a team-size section, a handoff template and hook, an improvement log and a benchmark, from a long session of building and adversarially testing agent-loop.**
   `references/team-composition.md` (the number of agents depends on the task: principles, role table mapped to Claude Code subagents, a sizing table from 1 to 12, a

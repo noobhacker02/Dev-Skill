@@ -2,7 +2,7 @@
 """
 Tests for dev-workflow/scripts/handoff_hook.py using the payload shapes from the Claude Agent SDK's hook types
 (PreCompact: trigger/custom_instructions; PostCompact: trigger/compact_summary; SessionStart: source).
-Also runs two mutants of the script (redaction removed, project-boundary guard removed) and requires the checks to catch them,
+Also runs three mutants of the script (redaction removed, project-boundary guard removed, a word boundary back in front of the key name) and requires the checks to catch them,
 so a green run means the safeguards are actually exercised.
 Live firing by Claude Code is NOT tested here; that can only be observed when a real compaction happens.
 """
@@ -77,6 +77,42 @@ def checks(script):
     rc, out, _ = run(script, {"hook_event_name": "PostCompact", "trigger": "auto", "compact_summary": "   ", "cwd": d})
     expect(rc == 0 and len(os.listdir(save_dir)) == 1, "an empty summary created a file")
 
+    # PostCompact: the ordinary spellings of a secret (adversary round 2, A34: 8 of 10 survived into a file that is committed). The values are invented and built at run time.
+    d = project()
+    v = "notarealvalue" + "12345"
+    spellings = [
+        "export GITHUB_" + "TOKEN=" + v,
+        "DB_" + "PASSWORD=" + v,
+        "client_" + 'secret = "' + v + '"',
+        "access_" + "token=" + v,
+        "refresh_" + "token: " + v,
+        "Cookie: li_" + "at=" + v + "; JSESSIONID=\"" + v + "\"",
+        "Authorization: Bear" + "er " + v + "." + v + "." + v,
+        "AWS_SECRET_" + "ACCESS_KEY=" + v,
+        "api_" + "key=" + v,
+        '{"pass' + 'word": "' + v + '"}',
+        "Set-Cookie: sid=" + v + "; Path=/",
+        "curl -H 'Authorization: Bear" + "er " + v + "' https://example.test",
+        "the jwt was eyJ" + "hbGciOiJIUzI1NiJ9." + "eyJzdWIiOiIxMjM0NTY3ODkwIn0." + "abcdEFGH",
+    ]
+    controls = ["The token budget for the run is large.", "Passwords are never logged and the secret store is outside this repo.", "Decision: the api key rotation is planned for Friday.", "Authorization is checked by the hook, not the page."]
+    rc, out, _ = run(script, {"hook_event_name": "PostCompact", "trigger": "auto", "compact_summary": "\n".join(["Summary."] + spellings + controls), "session_id": "s2", "cwd": d})
+    save_dir2 = os.path.join(d, "docs", "handoff", "compactions")
+    files2 = os.listdir(save_dir2) if os.path.isdir(save_dir2) else []
+    if files2:
+        saved2 = open(os.path.join(save_dir2, files2[0])).read()
+        expect(v not in saved2, f"a secret spelling was saved unredacted: still contains the value after redaction ({len([l for l in saved2.splitlines() if v in l])} line(s): {[l[:50] for l in saved2.splitlines() if v in l][:3]})")
+        for c in controls:
+            expect(c in saved2, f"redaction ate ordinary prose: {c!r}")
+    else:
+        expect(False, "PostCompact saved nothing for the spellings summary")
+    # a long word and a long run of key names must not make the redactor slow
+    import time
+    d = project()
+    t0 = time.time()
+    run(script, {"hook_event_name": "PostCompact", "trigger": "auto", "compact_summary": ("A" * 150_000) + "\n" + ("token" * 8_000), "session_id": "s3", "cwd": d})
+    expect(time.time() - t0 < 10, f"redacting a long word took {time.time() - t0:.1f} s")
+
     # PostCompact: never writes outside the project, whatever the config says
     outside = tempfile.mkdtemp(prefix="handoff-outside-")
     d = project(config={"save_dir": os.path.relpath(outside, start=None) if False else outside})
@@ -126,12 +162,13 @@ def main():
         return 1
     m1 = mutant("no-redaction", "body = redact(summary)", "body = (summary)")
     m2 = mutant("no-boundary-guard", "if not inside(cfg[\"save_dir\"], cwd):", "if False:")
-    for name, path in (("redaction removed", m1), ("project-boundary guard removed", m2)):
+    m3 = mutant("word-boundary-before-key", "(?i)(token|secret|", "(?i)\\b(token|secret|")
+    for name, path in (("redaction removed", m1), ("project-boundary guard removed", m2), ("word boundary before the key name (the old A34 pattern)", m3)):
         caught = checks(path)
         if not caught:
             print(f"FAIL: mutant '{name}' survived: the tests cannot tell it from the real script")
             return 1
-    print("ok: handoff_hook: PreCompact/PostCompact/SessionStart behave as documented; 2 mutants caught; live firing by Claude Code not tested")
+    print("ok: handoff_hook: PreCompact/PostCompact/SessionStart behave as documented; 3 mutants caught; live firing by Claude Code not tested")
     return 0
 
 

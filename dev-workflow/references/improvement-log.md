@@ -186,3 +186,44 @@ Template:
 - **Suites:** none
 - **Skill impact:** the scanner only.
 - **Follow-ups:** the two documented holes; agent-loop keeps a copy of the scanner in `.githooks/`, so every fix here has to be copied there (a drift check would catch a stale copy).
+
+
+## SKILL-013 · 2026-10-07 · Judge what the tool will open or run, not what the text looks like (agent-loop IMP-016)
+- **Problem:** the approval and path hooks of agent-loop judged text. Round 2 of the adversary ran the real hook chain and got commands that run programs or write files approved as read-only (`sed '1e CMD'`, `rg --pre`, `git remote set-url`,
+  `sort -o`), a `~` read as a directory name, a relative link judged from the wrong directory, and brace expansion past the path check; it was the fourth time the same class had been found (symlinks in round 1).
+- **Why it matters:** every gate that decides from the text of its input is bypassed by whatever the tool does with that text before it acts; for an unattended agent one approved line is enough.
+- **Change (how):** `references/verification-lessons.md` lesson 28: resolve as the tool does, allow-list safe forms instead of names, treat shell-rewritten words as unjudgeable (ask), keep a table of every form beside the ordinary
+  commands that must still pass, score the old gate first. The project catalog (agent-loop `docs/SELF-HEALING.md`, part C) counts the class at four.
+- **Measured:** not measurable as a number for the skill; product side agent-loop IMP-016: `shell-readonly` 106 of 216 to 216 of 216 and `file-hooks` 65 of 242 to 242 of 242, baselines on the unmodified build.
+- **Cost / trade-off:** one more lesson; a gate built this way asks more often (globs, braces, variables ask), which is the price of not guessing.
+- **Suites:** none
+- **Skill impact:** lesson 28.
+- **Follow-ups:** the same table for any new gate (the LIVE-mode allowances list in S2 is the next one); expansion is judged, not performed, so a glob still asks.
+
+## SKILL-014 · 2026-10-07 · A test for a failure that kills or hangs a process is measured on the old code many times and counts a timeout as a failure (agent-loop IMP-017)
+- **Problem:** four slips in one round (lesson 29): a one-run "fails on the old code" for a race that fails one run in three, a crash detector that swallowed its own assertion and let the old build exit 0, a timed-out child scored as
+  exit 0, and a "score the old build" run that imported the new `dist`.
+- **Why it matters:** a regression test that fails on the old code only sometimes protects nothing and lets mutants survive by luck; a harness that reads a hang as a pass inflates a benchmark.
+- **Change (how):** `references/verification-lessons.md` lesson 29; the project catalog has a row for each slip.
+- **Measured:** product side agent-loop IMP-017: the popup scenario went from 1 failure in 3 old-build runs (three popups, one request each) to 5 in 6 (ten popups, eight requests each) and 6 in 6 (thirty), and the benchmark
+  check `popup-storm-survives` scores 0 on the old build in every run since.
+- **Cost / trade-off:** a harsher scenario costs a few seconds per run; a child process per scenario is slower than an in-process call.
+- **Suites:** none
+- **Skill impact:** lesson 29.
+- **Follow-ups:** none until a test of this kind is shown to pass on the old code again.
+
+## SKILL-015 · 2026-10-07 · The compaction-summary redactor matches key names with word characters around them, and credential headers (agent-loop adversary round 2, A34)
+- **Problem:** `handoff_hook.py` redacted `(password|secret|api_key|token)` only with a `\b` in front, and `_` is a word character, so `GITHUB_TOKEN=...`, `DB_PASSWORD=...`, `client_secret`, `access_token`, `refresh_token`,
+  `AWS_SECRET_ACCESS_KEY` were saved as they were; `Cookie:`, `Set-Cookie:`, `Authorization: Bearer ...` and JWTs had no pattern at all. 8 of the 10 spellings the adversary tried survived into a file that the checkpoint command commits
+  to the agent-loop repository, which is public. Nothing real had leaked (the saved summaries were searched).
+- **Why it matters:** a compaction summary is a model-written digest of a whole session, including anything pasted or printed; a leaked session token in a public git history cannot be unpublished.
+- **Change (how):** `scripts/handoff_hook.py`: one pattern for a key name with anything word-like around it and its value (the trailing run is bounded to 40 characters so a long word cannot make the match slow), one for a credential
+  header taken whole (a Cookie line holds several), one for `Bearer` values and one for JWTs. `tests/handoff_hook_test.py`: thirteen spellings built at run time (the adversary's ten plus a JSON key, `Set-Cookie`, a curl header and a JWT),
+  four ordinary sentences that must stay (the token budget, passwords never logged, the api key rotation, authorization checked by the hook), a speed check on a 150,000-character word and 8,000 repetitions of `token`, and a third
+  mutant (the word boundary put back in front of the key name).
+- **Measured:** on the old script 11 of 13 spellings are saved unredacted; on the new one 0 of 13, with the four ordinary sentences intact; the third mutant is caught (3 of 3 mutants); the new redactor changes none of the three
+  summaries already saved (no false positive on 75 KB of real summaries, and nothing found in them).
+- **Cost / trade-off:** a few more words are redacted than strictly needed (`token: abcdef` in prose); a pattern set can always be missed by a spelling nobody tried.
+- **Suites:** none
+- **Skill impact:** `scripts/handoff_hook.py` only.
+- **Follow-ups:** whether to keep committing the summaries at all (they live under `docs/handoff/compactions/` and `checkpoint` stages them) is the user's decision, recorded in agent-loop's HANDOFF; until then the newest summary stays out of commits.

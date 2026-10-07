@@ -261,3 +261,26 @@ repository file name inside `--json`: two channels and one byte class the first 
 **The rule.** Write the matrix before the test: byte classes (C0, C1, bidi overrides, NUL) by channels (text output, JSON output, file names, role and config files, error text). NUL cannot be put on a command line, so
 call the function directly for that class. Feed every class through every channel, include a control that the same input without the bad bytes still works, filter at the source and again at the edge, and mutate each
 filter to see the test fail.
+
+## 28. Judge what the tool will open or run, not what the text looks like
+
+**What happened.** An approval hook and a set of path hooks decided from the text of a command or a path, and the tool that acted on the text read it differently. Round 1 of the adversary found a read through a symlink
+inside the allowed directory. Round 2 found `~/x` judged as a directory called `~` while the file tools expand it to the home directory, a relative link judged from the wrong directory, `sed '1e CMD'` and `sed w`
+(run a program, write a file) approved as "read-only because it is sed", `rg --pre`, `git remote set-url`, `sort -o`, `cat {/etc/hostname,notes.txt}` (the shell expands the brace before the command sees it), and a credential
+list that knew only exact file names. Three proof files were created outside the directory by commands the hook approved with no prompt. It was the fourth time in the project that a check on text lost to a tool that reads
+the same text another way.
+
+**The rule.** For any gate on what a tool is given: (1) resolve the way the tool does, links, `~`, `..`, drive forms and the base directory it will use; (2) allow-list safe FORMS instead of listing dangerous names, because one
+name (`sed`, `git`, `find`) hides many forms and a list of names is a list of the ones you thought of; (3) a word the shell rewrites before the command sees it (a glob, a brace, a tilde, a variable) is a word you cannot judge, so
+it asks; (4) write the table of every form of input beside the ordinary commands that must still run without asking, because a rule that asks about everything is turned off by the people it was meant to protect; (5) score the
+old gate with that table first.
+
+## 29. A test for a failure that kills or hangs a process: measure it on the old code many times, run it in a child, and count a timeout as a failure
+
+**What happened.** Four things went wrong with tests of this kind in one round. A popup storm that killed the old build about one run in three was called "fails on the old code" after one lucky run, so the first benchmark
+score said the check passed; five or six runs and a harsher scenario (ten popups with eight requests each, then thirty) made it fail every time. A test for a bad status line installed an `uncaughtException` listener to
+detect the crash, and the listener caught the test's own failed assertion: the old build "passed" with exit 0. A child process that outlived its time limit came back from `spawnSync` with `status: 0` and `error: ETIMEDOUT`,
+which a harness that read `status` alone scored as a clean exit. And a new test file run from the main tree to "score the old build" imported `../dist` from its own location, so it scored the new one.
+
+**The rule.** Run the scenario against the old build five or six times and keep making it harsher until it fails every time, or a mutant survives it by luck. Run it in a child process with a time limit, and treat a timeout, a
+signal and an error as failures in their own right, never `status` alone. Remove any detector listener before asserting. When scoring an old build, copy the test into the scratch worktree and print which `dist` it loaded.
