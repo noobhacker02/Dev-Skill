@@ -6,6 +6,8 @@ All notable changes to this project are documented here. Format follows
 ## [Unreleased]
 
 ### Fixed
+- **This repository's own scanner hook was four findings behind the skill's** (SKILL-016). `.githooks/check_staged.py` still cut each finding at 200 characters before looking for `devskill:allow`; the fix of SKILL-012 had reached the skill and
+  agent-loop but not the hook that guards this repository. It is synced, and `tests/scanner_copies_test.py` fails when the copies differ (it failed on the stale one).
 - **The compaction-summary redactor now catches `GITHUB_TOKEN`, `DB_PASSWORD`, `client_secret`, `access_token`, Cookie and Authorization lines, Bearer values and JWTs** (SKILL-015; agent-loop adversary round 2, A34). The pattern
   had a word boundary in front of the key name and `_` is a word character, so 8 of 10 ordinary spellings were saved as they were into a file the checkpoint command commits. Thirteen spellings now tested (11 survived on the old
   script, 0 on the new), four ordinary sentences stay, a speed check, and a third mutant. The three saved summaries are unchanged by it.

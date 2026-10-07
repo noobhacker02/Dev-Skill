@@ -227,3 +227,16 @@ Template:
 - **Suites:** none
 - **Skill impact:** `scripts/handoff_hook.py` only.
 - **Follow-ups:** whether to keep committing the summaries at all (they live under `docs/handoff/compactions/` and `checkpoint` stages them) is the user's decision, recorded in agent-loop's HANDOFF; until then the newest summary stays out of commits.
+
+## SKILL-016 · 2026-10-07 · The scanner's copies are checked against each other (found while fixing agent-loop adversary A32)
+- **Problem:** this repository's own hook (`.githooks/check_staged.py`, which `core.hooksPath` runs here and the CI gate extracts from the base commit) was still the version from before SKILL-012: four findings cut at 200 characters before the
+  allow-marker check and a printed snippet that was not cut. The fix reached the skill's copy and agent-loop's copy and not the one that guards this repository, and nothing noticed for four days; SKILL-012's own follow-up had named
+  the risk ("a drift check would catch a stale copy").
+- **Why it matters:** a safety fix that did not reach the copy that guards the place it was made for is a fix that does not protect it, and a stale scanner looks exactly like a working one.
+- **Change (how):** `.githooks/check_staged.py` copied from `dev-workflow/scripts/check_staged.py`; `tests/scanner_copies_test.py` fails when the skill's, the repository hook's or (when checked out) agent-loop's copy differ, and shows it can by
+  catching a one-byte change.
+- **Measured:** 1 of 3 copies was stale before (the repository hook differed in 4 lines); the new test fails on it and passes on the synced copy; 3 of 3 identical now.
+- **Cost / trade-off:** every scanner fix is now made in one place and copied twice; the test needs to be run (it is not wired into CI, which only runs the PR gate).
+- **Suites:** none
+- **Skill impact:** `.githooks/check_staged.py`; `tests/scanner_copies_test.py`.
+- **Follow-ups:** wiring the test into the PR gate workflow; an install script that copies instead of a human.
