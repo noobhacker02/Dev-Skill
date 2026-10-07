@@ -284,3 +284,13 @@ which a harness that read `status` alone scored as a clean exit. And a new test 
 
 **The rule.** Run the scenario against the old build five or six times and keep making it harsher until it fails every time, or a mutant survives it by luck. Run it in a child process with a time limit, and treat a timeout, a
 signal and an error as failures in their own right, never `status` alone. Remove any detector listener before asserting. When scoring an old build, copy the test into the scratch worktree and print which `dist` it loaded.
+
+## 30. A wait in a test is on a signal, and a test that touches timing is run under load before it is called stable
+
+**What happened.** A browser test opened a page that opens and closes thirty popups, waited a fixed 2 s, and asked the browser tools what the page says. Alone it passed every time. In the full suite, with other suites using the CPU, the page's storm was still running at 2 s; the
+browser dropped the call ("Resulting promise was garbage collected") and the test failed, and so did the benchmark check that measures the same thing. The test was not wrong about what should happen; it was wrong about how long it takes. Re-running it would have turned green and hidden that the
+product handed the agent an error it could not act on.
+
+**The rule.** Wait for a signal from the thing you are waiting for (the page makes a request when its work is over; an event; a file appears), never for a number of seconds. If a test depends on timing at all, run it with four busy loops (`node -e 'while(true){}'` four times) and count
+failures over six runs before calling it stable, and read "passes alone, fails in the full suite" as "load" first. When the failure is one an agent would meet in real use, fix the product as well as the test: ask a read again, say plainly what happened for an action, and do not repeat an action
+that may have happened.

@@ -240,3 +240,15 @@ Template:
 - **Suites:** none
 - **Skill impact:** `.githooks/check_staged.py`; `tests/scanner_copies_test.py`.
 - **Follow-ups:** wiring the test into the PR gate workflow; an install script that copies instead of a human.
+
+## SKILL-017 · 2026-10-07 · A wait in a test is on a signal from the thing waited for, and a test that touches timing is run under load before it is called stable (found when the full suite failed on a test that passed alone)
+- **Problem:** a browser test waited a fixed 2 s for a popup storm to finish, then asked the tools a question. Alone on an idle machine it passed every time; in the full suite, where other suites share the CPU, the storm was still running when the question came, the browser dropped
+  the call, and the test failed (twice in one full run, once directly and once through the benchmark that re-measures it). The cause was found only because the full suite was run on the exact commit before pushing; the lesson that "it passed when I ran it" was about the wrong machine state.
+- **Why it matters:** a flaky test teaches people to re-run until green, and a re-run is exactly the habit that hides a real defect (here the product passed the browser's own wording to the agent). Load is a normal condition for the thing under test, not an error in the test.
+- **Change (how):** `dev-workflow/references/verification-lessons.md` lesson 30: wait on a signal from the thing waited for (a request the page makes when its work is over, an event, a file); when a test depends on timing at all, run it with four busy loops competing for the CPU
+  and count failures in six runs before calling it stable; treat "passes alone, fails in the full suite" as load until shown otherwise; make the failure the product's problem too when an agent would meet it (retry a read, say plainly what happened for an action).
+- **Measured:** one failing test and one failing benchmark check in one full run, both reproduced under load (4 of 6 runs failed on the old code, 0 of 8 idle), both gone with the signal-based wait (3 of 3 runs passed under the same load); see agent-loop IMP-019.
+- **Cost / trade-off:** a signal-based wait takes as long as the work takes, so a slow machine makes the test slow instead of flaky.
+- **Suites:** none
+- **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 30).
+- **Follow-ups:** a "run under load" mode for the dev-workflow's own stress tests (none of them waits on a clock today, checked by search).
