@@ -272,3 +272,24 @@ Template:
 - **Suites:** none
 - **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 32).
 - **Follow-ups:** none.
+
+## SKILL-020 · 2026-10-07 · Every mutation survivor gets a verdict, and the one that is neither redundant nor unreachable is a bug (found in agent-loop IMP-028)
+- **Problem:** a mutation check over a new module (the agent-only browser profile, its lock and the login command) left 51 survivors of 121 mutants. Treating the number as noise, or closing each with the cheapest assertion, would have missed the one that mattered: a survivor in a path-containment helper (`r === "" || (!r.startsWith("..") && ...)`) was not killed by any test, was equivalent as written, and its rewrite exposed that a directory whose own name starts with two dots was treated as outside its parent, so a profile could be created inside a directory it was forbidden to be in. A second survivor group pointed at a wrong belief of mine (that a blocked service worker makes `register()` fail; it resolves and the worker simply does not run).
+- **Why it matters:** a survivor count is a list of questions, and the questions that are not about redundancy are bug reports; answering them with "the tests are probably fine" is how a containment check with a hole ships.
+- **Change (how):** `dev-workflow/references/verification-lessons.md` lesson 33: give each survivor one of four verdicts, written next to the mutant: a missing test (write one that fails on the mutant), equivalent (say why the behaviour is identical), unreachable on this platform (say which platform or fault would reach it), or a defect (fix it test-first). Read the equivalent ones twice: a redundant clause is a clause nobody tested, and the rewrite that removes it is where a bug shows. Make a race testable by giving the code a test-only hook at the point where another process can step in, instead of hoping a stress test hits it. Probe a library's actual behaviour before asserting what you believe about it.
+- **Measured:** in agent-loop, 130 mutants, 118 killed, 12 classified with a reason each, 0 unexplained, from 51 survivors in the first pass; one real bug found and fixed test-first (the `..x` directory), two wrong beliefs corrected (a blocked service worker, an open-server count that needs a moment to settle).
+- **A verdict is a claim (added after CI):** one "equivalent" verdict was wrong, and macOS CI found the bug at the next push (a forbidden directory that does not exist yet and sits under a link, as `/var` does on macOS). The rule now says to build the counterexample before calling a mutant equivalent.
+- **Cost / trade-off:** writing the verdict for each survivor takes longer than a score; a hook added only for tests is a small amount of production code that exists to be called by a test.
+- **Suites:** none
+- **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 33).
+- **Follow-ups:** none.
+
+## SKILL-021 · 2026-10-07 · When the thing being checked can lie, check it twice, the second time where it cannot reach (found in agent-loop IMP-029)
+- **Problem:** the `upload` browser tool had to be sure a form would send the user's file to the page's own site. Asking the page is advisory: an input named `action` hides the real attribute, a script can replace the accessors or `URL`, can rewrite the form after the look, and can send the file with `fetch` and no form. Two real holes showed in the tests: an image button's `formaction` was missed (`form.elements` leaves image buttons out), and the first design held the file's page by comparing origins when the right signal was a new document.
+- **Why it matters:** a check that only asks the subject gives the subject the last word; in a job flow the subject is a web page the agent was sent to.
+- **Change (how):** `dev-workflow/references/verification-lessons.md` lesson 34: name who controls the answer to a check, repeat it in a layer that party does not control, and write the test from the liar's side (one hostile page per lie, a counter on the far side, a control that is allowed).
+- **Measured:** in agent-loop, 27 hostile cases in `test:upload-form` (20 refused forms, 2 frames, a form rewritten after the check or at attach time, a script fetch, a window the page opens) give a far-side count of 0 for every way found to send the file elsewhere, with a control for each; 106 mutants, 92 killed, 14 classified; two real holes found by cases written from the threat list before the mutation run.
+- **Cost / trade-off:** a second layer is more code and a second set of tests; the network rule blocks a legitimate third-party POST while a file is attached.
+- **Suites:** none
+- **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 34).
+- **Follow-ups:** none.
