@@ -262,3 +262,13 @@ Template:
 - **Suites:** none
 - **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 31).
 - **Follow-ups:** none.
+
+## SKILL-019 · 2026-10-07 · A path handed to a child process is a Windows-only failure, and a repeated one is a scan, not a memory (found in agent-loop IMP-025)
+- **Problem:** a new test started a child node process with `--import <absolute path>`. Node on Windows reads `D:\a\...` as a URL with the scheme `d:` and refuses it. The full suite on Linux passed on the exact commit, the commit was pushed, and the Windows CI job failed. It was the fourth time the same mistake was found this way, each time after a push, and a row in the self-healing catalog that said "use `pathToFileURL`" had not stopped it.
+- **Why it matters:** a rule that depends on remembering is a rule that will be forgotten at the moment of a rushed push; the cost is a red CI cycle and a second full run.
+- **Change (how):** `dev-workflow/references/verification-lessons.md` lesson 32: when a mistake has been made twice, turn it into a test that scans for it (here, every `--import` argument must be a relative path, a URL or a package name), check the scanner against snippets it must refuse and accept, and run it on the old tree to see it fail there; and a failure that reads "undefined" because a page survived a script that did not load needs a harness that names the failed load.
+- **Measured:** in agent-loop the scan fails on the tree before the fix (two files) and passes after; 17 mutants of the scanner, 0 survivors after two were closed; the fourth occurrence is the last one the Linux run can see.
+- **Cost / trade-off:** a scan sees only the forms it knows (an `--import` built in a loop is invisible to it).
+- **Suites:** none
+- **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 32).
+- **Follow-ups:** none.
