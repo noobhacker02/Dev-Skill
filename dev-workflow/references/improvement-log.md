@@ -293,3 +293,13 @@ Template:
 - **Suites:** none
 - **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 34).
 - **Follow-ups:** none.
+
+## SKILL-022 · 2026-10-08 · A test that passes against its own mutant has not tested the rule; "cannot matter" is a claim (found in agent-loop IMP-031)
+- **Problem:** round 3 of the adversary loop on agent-loop's LIVE mode found three high holes in the upload hold that the author's own mutation check had missed or dismissed: `OPTIONS` called an equivalent mutant without a counterexample, a shared worker whose requests the interception point never sees (the reviewer's fix would have done nothing, shown only by a probe), and a reload test that sent from an inline script and so passed against the old code. A test that counted directories in the shared temp directory also failed when two suites ran at once.
+- **Why it matters:** each of these would have shipped as "tested" and "mutation-checked"; the numbers were true and the claim was not.
+- **Change (how):** `dev-workflow/references/verification-lessons.md` lesson 35: an "equivalent" verdict needs a built counterexample; print what the interception point sees before designing the fix; run every new rule's test against the old code and a mutant and read which assertion failed; a check of a shared place counts only what its own process made.
+- **Measured:** in agent-loop, 9 of 10 round-3 findings fixed test-first, every new section failing on the previous source, two mutants of the new browser rules caught (one only after the reload test was corrected); `test:login` run twice at once failed before and passes after.
+- **Cost / trade-off:** every new rule costs a mutant run and a read of the failing assertion; a probe before a fix is a few minutes.
+- **Suites:** none
+- **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 35).
+- **Follow-ups:** none.
