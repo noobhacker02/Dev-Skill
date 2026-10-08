@@ -303,3 +303,13 @@ Template:
 - **Suites:** none
 - **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 35).
 - **Follow-ups:** none.
+
+## SKILL-023 · 2026-10-08 · Write the "may have happened" record before the first possible effect; compare scoped identifiers with their scope (found in agent-loop IMP-037)
+- **Problem:** round 7 of the adversary loop on agent-loop's job flow found that the ledger row was written after the fields were filled, so a page that submits on a file choice sent an application the program called "not sent" and sent it again on the next run (2 real applications through the real CLI); and that a form number from a frame matched the main page's.
+- **Why it matters:** both were found by a reviewer, not by the author's tests, which only exercised the order the author had in mind.
+- **Change (how):** `dev-workflow/references/verification-lessons.md` lesson 36: record before the first action that can have the effect and retract only on evidence; scoped identifiers are compared with their scope; a fix that changes an older assertion changes the test in the same commit with the reason.
+- **Measured:** in agent-loop, 14 of 14 round-7 findings fixed test-first, the two structural ones with a page that reproduces them; 13 one-line mutants of the new code killed (3 only after a better case).
+- **Cost / trade-off:** a record that is written early must be retracted on every early exit, which is code and a test per exit.
+- **Suites:** none
+- **Skill impact:** `dev-workflow/references/verification-lessons.md` (lesson 36).
+- **Follow-ups:** none.
